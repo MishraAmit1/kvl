@@ -20,6 +20,8 @@ import SearchBar from "./SearchBar";
 import Pagination from "./Pagination";
 import Shimmer from "../components/Shimmer";
 import { getApiBaseUrl } from "../config/api";
+import { Card } from "../components/ui/card";
+import { Button } from "../components/ui/button";
 
 const LoadChalans = () => {
   const [filters, setFilters] = useState({
@@ -153,13 +155,20 @@ const LoadChalans = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      CREATED: "bg-blue-100 text-blue-800",
-      DISPATCHED: "bg-yellow-100 text-yellow-800",
-      IN_TRANSIT: "bg-purple-100 text-purple-800",
-      ARRIVED: "bg-green-100 text-green-800",
-      CLOSED: "bg-gray-100 text-gray-800",
+      CREATED:
+        "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+      DISPATCHED:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+      IN_TRANSIT:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+      ARRIVED:
+        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+      CLOSED: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400",
     };
-    return colors[status] || "bg-gray-100 text-gray-800";
+    return (
+      colors[status] ||
+      "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"
+    );
   };
 
   const getStatusIcon = (status) => {
@@ -185,34 +194,31 @@ const LoadChalans = () => {
   const { loadChalans = [], pagination } = loadChalansData?.data || {};
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-3 sm:p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-2xl font-bold">Load Chalans</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Load Chalans</h1>
           <p className="text-muted-foreground">
             Manage truck load chalans and consignments
           </p>
         </div>
-        <Link
-          to="/load-chalans/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          New Load Chalan
+        <Link to="/load-chalans/new">
+          <Button className="w-full sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" />
+            New Load Chalan
+          </Button>
         </Link>
       </div>
 
       {/* Filters */}
-      <div className="bg-card text-card-foreground p-4 rounded-lg border border-border mb-6">
+      <Card className="p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
+            <label className="block text-sm font-medium mb-1">Status</label>
             <select
               value={filters.status}
               onChange={(e) => handleFilterChange("status", e.target.value)}
-              className="w-full border border-input bg-background text-foreground rounded-md px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="w-full border border-border rounded-md px-3 py-2 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">All Status</option>
               <option value="CREATED">Created</option>
@@ -224,19 +230,17 @@ const LoadChalans = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date
-            </label>
+            <label className="block text-sm font-medium mb-1">Date</label>
             <input
               type="date"
               value={filters.date}
               onChange={(e) => handleFilterChange("date", e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-border rounded-md px-3 py-2 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1">
               Vehicle Number
             </label>
             <input
@@ -246,12 +250,12 @@ const LoadChalans = () => {
               onChange={(e) =>
                 handleFilterChange("vehicleNumber", e.target.value)
               }
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-border rounded-md px-3 py-2 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1">
               Driver Name
             </label>
             <input
@@ -259,45 +263,49 @@ const LoadChalans = () => {
               placeholder="Search driver..."
               value={filters.driverName}
               onChange={(e) => handleFilterChange("driverName", e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-border rounded-md px-3 py-2 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Search Bar */}
-      <SearchBar
-        onSearch={handleSearch}
-        placeholder="Search by vehicle number or driver name..."
-      />
+      <Card className="mb-4 p-3 sm:p-4">
+        <SearchBar
+          value={searchTerm}
+          onChange={(e) => handleSearch(e.target.value)}
+          onClear={() => handleSearch("")}
+          placeholder="Search by vehicle number or driver name..."
+        />
+      </Card>
 
       {/* Load Chalans Table */}
-      <div className="bg-card text-card-foreground rounded-lg border border-border overflow-hidden">
-        <div className="overflow-x-auto">
+      <Card className="overflow-hidden">
+        <div className="w-full overflow-x-auto">
           <table className="min-w-full divide-y divide-border bg-card text-card-foreground">
             <thead className="bg-muted text-muted-foreground">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Chalan Details
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Vehicle & Driver
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Consignments
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Financial
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-border">
               {loadChalans.map((chalan) => (
                 <tr
                   key={chalan._id}
@@ -305,13 +313,13 @@ const LoadChalans = () => {
                 >
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium">
                         {chalan.chalanNumber}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         {new Date(chalan.date).toLocaleDateString()}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         {chalan.bookingBranch} → {chalan.destinationHub}
                       </div>
                     </div>
@@ -319,13 +327,13 @@ const LoadChalans = () => {
 
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium">
                         {chalan.vehicle?.vehicleNumber || "N/A"}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         {chalan.driver?.driverName || "N/A"}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         {chalan.ownerName || "N/A"}
                       </div>
                     </div>
@@ -333,13 +341,13 @@ const LoadChalans = () => {
 
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium">
                         {chalan.totalLRCount} LR
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         {chalan.totalPackages} packages
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         {chalan.totalWeight} kg
                       </div>
                     </div>
@@ -347,10 +355,10 @@ const LoadChalans = () => {
 
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium">
                         ₹{chalan.totalFreight?.toLocaleString() || 0}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         Balance: ₹{chalan.balanceFreight?.toLocaleString() || 0}
                       </div>
                     </div>
@@ -373,7 +381,7 @@ const LoadChalans = () => {
                     <div className="flex items-center gap-2">
                       <Link
                         to={`/load-chalans/${chalan._id}`}
-                        className="text-blue-600 hover:text-blue-900 p-1"
+                        className="text-primary hover:text-primary/80 p-1"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />
@@ -381,7 +389,7 @@ const LoadChalans = () => {
 
                       <Link
                         to={`/load-chalans/${chalan._id}/edit`}
-                        className="text-green-600 hover:text-green-900 p-1"
+                        className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 p-1"
                         title="Edit"
                       >
                         <Edit className="w-4 h-4" />
@@ -389,7 +397,7 @@ const LoadChalans = () => {
 
                       <button
                         onClick={() => handleDownloadPDF(chalan._id)}
-                        className="text-orange-600 hover:text-orange-900 p-1"
+                        className="text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 p-1"
                         title="Download PDF"
                       >
                         <Download className="w-4 h-4" />
@@ -397,7 +405,7 @@ const LoadChalans = () => {
 
                       <button
                         onClick={() => handlePrint(chalan._id)}
-                        className="text-purple-600 hover:text-purple-900 p-1"
+                        className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 p-1"
                         title="Print"
                       >
                         <Printer className="w-4 h-4" />
@@ -406,7 +414,7 @@ const LoadChalans = () => {
                       {chalan.status === "CREATED" && (
                         <button
                           onClick={() => handleDelete(chalan._id)}
-                          className="text-red-600 hover:text-red-900 p-1"
+                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1"
                           title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -418,7 +426,7 @@ const LoadChalans = () => {
                           onClick={() =>
                             handleStatusUpdate(chalan._id, chalan.status)
                           }
-                          className="text-purple-600 hover:text-purple-900 p-1"
+                          className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 p-1"
                           title="Update Status"
                         >
                           <Truck className="w-4 h-4" />
@@ -434,30 +442,31 @@ const LoadChalans = () => {
 
         {loadChalans.length === 0 && (
           <div className="text-center py-12">
-            <Package className="mx-auto h-12 w-12 text-gray-400" />
+            <Package className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-2 text-sm font-medium">No load chalans found</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Get started by creating a new load chalan.
             </p>
             <div className="mt-6">
-              <Link
-                to="/load-chalans/new"
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="-ml-1 mr-2 h-5 w-5" />
-                New Load Chalan
+              <Link to="/load-chalans/new">
+                <Button>
+                  <Plus className="-ml-1 mr-2 h-5 w-5" />
+                  New Load Chalan
+                </Button>
               </Link>
             </div>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Pagination */}
       {pagination && pagination.total > pagination.limit && (
         <Pagination
-          currentPage={pagination.page}
+          page={pagination.page}
           totalPages={pagination.pages}
           onPageChange={(page) => handleFilterChange("page", page)}
+          total={pagination.total}
+          pageSize={pagination.limit}
         />
       )}
     </div>
