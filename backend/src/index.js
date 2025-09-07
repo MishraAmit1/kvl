@@ -46,13 +46,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: [
-      process.env.CLIENT_URL || "https://kvl-frontend.vercel.app",
-      "http://localhost:5173",
-    ],
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        "https://kashivishwanath.vercel.app",
+        "http://localhost:5173",
+      ];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
+
 app.use(helmet());
 app.use(cookieParser());
 app.use(globalRateLimiter);
