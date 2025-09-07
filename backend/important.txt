@@ -1,0 +1,17 @@
+8prPSbFlrlx1cRRc
+
+{
+  "name": "Biodegradable Plastics",
+  "slug": "biodegradable-plastics",
+  "description": "Plastics that decompose naturally by the action of living organisms.",
+  "image": "https://example.com/images/biodegradable-plastics.jpg",
+  "technicalOverview": "Made from renewable raw materials, these plastics break down in the environment.",
+  "applications": ["Packaging", "Agriculture", "Medical Devices"],
+  "keyFeatures": ["Eco-friendly", "Compostable", "Reduces pollution"],
+  "relatedIndustries": ["Packaging", "Agriculture", "Healthcare"],
+  "seoTitle": "Biodegradable Plastics - Eco Solutions",
+  "seoDescription": "Learn about biodegradable plastics, their features, and applications.",
+  "seoKeywords": ["biodegradable", "eco-friendly", "plastics", "compostable"]
+}
+
+

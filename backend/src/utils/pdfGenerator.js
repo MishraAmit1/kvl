@@ -1,0 +1,777 @@
+export const generateConsignmentPDF = async (consignment, res) => {
+  const PDFDocument = (await import("pdfkit")).default;
+  const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 0 });
+
+  // Pipe PDF to response
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename=consignment-${consignment.consignmentNumber}.pdf`
+  );
+  doc.pipe(res);
+  // === WATERMARK (very light, behind everything) ===
+  {
+    const pageW = doc.page.width;
+    const pageH = doc.page.height;
+
+    doc.save();
+
+    // Very faint brand red
+    doc.fillColor("#D11A1A").opacity(0.06); // 6% opacity (0.04–0.08 try kar sakte ho)
+    doc.font("Helvetica-Bold");
+
+    const wmSize = 260; // size adjust: 220–300
+    doc.fontSize(wmSize);
+
+    // Rotate around center so placement consistent
+    doc.rotate(-30, { origin: [pageW / 2, pageH / 2] });
+
+    const wmText = "KVL";
+    const wmWidth = doc.widthOfString(wmText);
+
+    // Center the text on the page
+    const x = (pageW - wmWidth) / 2;
+    const y = (pageH - wmSize) / 2; // approx vertical center
+    doc.text(wmText, x, y);
+
+    doc.restore(); // reset rotation/opacity so rest of PDF is unaffected
+  }
+  // === END WATERMARK ===
+  // Helpers
+  const formatDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}/${d.getFullYear()}`;
+  };
+
+  const drawCheckbox = (x, y, checked) => {
+    doc.rect(x, y, 10, 10).stroke();
+    if (checked) {
+      doc
+        .rect(x + 2, y + 2, 6, 6)
+        .fill("black")
+        .stroke();
+      doc.fillColor("black");
+    }
+  };
+
+  // Clean, professional KVL logo using filled polygons (no stroke fuzz)
+  const drawKVLLogo = (doc, x, y, opts = {}) => {
+    const h = opts.height ?? 18; // overall height
+    const color = opts.color ?? "#D11A1A"; // brand red
+    const t = opts.thickness ?? Math.max(2, Math.round(h * 0.2)); // weight ~20%
+    const gap = opts.gap ?? Math.round(h * 0.06); // K bar gap from slants
+    const skew = opts.skew ?? Math.max(1, h * 0.09); // L top slant
+
+    // helper: draw a thick band between two points as a filled quad
+    const band = (x1, y1, x2, y2, w) => {
+      const dx = x2 - x1,
+        dy = y2 - y1;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len,
+        ny = dx / len; // unit normal
+      const hw = w / 2;
+
+      doc
+        .moveTo(x1 + nx * hw, y1 + ny * hw)
+        .lineTo(x2 + nx * hw, y2 + ny * hw)
+        .lineTo(x2 - nx * hw, y2 - ny * hw)
+        .lineTo(x1 - nx * hw, y1 - ny * hw)
+        .closePath()
+        .fill();
+    };
+
+    doc.save();
+    doc.fillColor(color).miterLimit(2).lineJoin("miter").lineCap("butt");
+
+    // K: vertical bar (solid)
+    doc.rect(x, y, t, h).fill();
+
+    // K: two slanted arms (solid bands)
+    const kJointX = x + t + gap;
+    const kJointY = y + h * 0.5;
+    const kEndX = x + h * 0.52; // reach a bit right for boldness
+    band(kJointX, kJointY, kEndX, y + h * 0.12, t); // upper arm
+    band(kJointX, kJointY, kEndX, y + h * 0.88, t); // lower arm
+
+    // V: check-mark (two solid bands, deeper apex)
+    const vLeftX = x + h * 0.6;
+    const vLeftY = y + h * 0.14;
+    const vApexX = x + h * 0.78;
+    const vApexY = y + h * 0.72; // deeper apex for that 'tick' look
+    const vRightX = x + h * 1.05;
+    const vRightY = y + h * 0.1;
+    band(vLeftX, vLeftY, vApexX, vApexY, t);
+    band(vApexX, vApexY, vRightX, vRightY, t);
+
+    // L: vertical with slanted top + foot (all filled)
+    const lX = x + h * 1.12; // slight shift to the right for spacing
+    // Slanted-top vertical (parallelogram)
+    doc
+      .moveTo(lX, y)
+      .lineTo(lX + t, y + skew)
+      .lineTo(lX + t, y + h)
+      .lineTo(lX, y + h)
+      .closePath()
+      .fill();
+
+    // L foot (long base)
+    const footLen = h * 0.5;
+    doc.rect(lX, y + h - t, footLen, t).fill();
+
+    doc.restore();
+  };
+
+  // === MAIN LAYOUT VARIABLES ===
+  const startX = 20;
+  const startY = 20;
+  const rowHeight = 17;
+  const totalRows = 6;
+  const totalHeight = rowHeight * totalRows;
+  const totalWidth = 842 - 2 * startX;
+
+  const leftColWidth = 220;
+  const rightColWidth = 180;
+  const centerColWidth = totalWidth - leftColWidth - rightColWidth;
+
+  const centerX = startX + leftColWidth;
+  const rightX = centerX + centerColWidth;
+
+  const checkboxSize = 9;
+
+  // === Outer border ===
+  doc.rect(startX, startY, totalWidth, totalHeight).stroke();
+
+  // === Horizontal lines for left panel (6 rows) ===
+  for (let i = 1; i < totalRows; i++) {
+    doc
+      .moveTo(startX, startY + i * rowHeight)
+      .lineTo(centerX, startY + i * rowHeight)
+      .stroke();
+  }
+
+  // === Vertical separators ===
+  doc
+    .moveTo(centerX, startY)
+    .lineTo(centerX, startY + totalHeight)
+    .stroke();
+  doc
+    .moveTo(rightX, startY)
+    .lineTo(rightX, startY + totalHeight)
+    .stroke();
+
+  // === Right panel horizontal line splitting 2 rows ===
+  const rightRowHeight = totalHeight / 2;
+  doc
+    .moveTo(rightX, startY + rightRowHeight)
+    .lineTo(rightX + rightColWidth, startY + rightRowHeight)
+    .stroke();
+
+  // === LEFT PANEL TEXT ===
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("Subject to VAPI Jurisdiction", startX + 5, startY + 5);
+  doc.text(
+    "Goods are Carried at Owners risk only",
+    startX + 5,
+    startY + rowHeight + 5
+  );
+  doc.text("Insurance Company", startX + 5, startY + 2 * rowHeight + 5);
+  doc
+    .font("Helvetica-Bold")
+    .text(
+      consignment?.insurance?.company || "",
+      startX + 100,
+      startY + 2 * rowHeight + 5
+    );
+  doc
+    .font("Helvetica")
+    .text("Insurance Policy No.", startX + 5, startY + 3 * rowHeight + 5);
+  doc
+    .font("Helvetica-Bold")
+    .text(
+      consignment?.insurance?.policyNo || "",
+      startX + 100,
+      startY + 3 * rowHeight + 5
+    );
+  doc
+    .font("Helvetica")
+    .text("Value Rs.", startX + 5, startY + 4 * rowHeight + 5);
+  // doc
+  //   .font("Helvetica-Bold")
+  //   .text(
+  //     consignment?.value?.toLocaleString("en-IN") || "",
+  //     startX + 60,
+  //     startY + 4 * rowHeight + 5
+  //   );
+  doc
+    .font("Helvetica")
+    .text("Type of Pkg up:", startX + 5, startY + 5 * rowHeight + 5);
+
+  // Type of Pkg up checkboxes
+  const row6Y = startY + 5 * rowHeight + 5;
+  let xCursor = startX + 90;
+  drawCheckbox(xCursor, row6Y, consignment?.typeOfPickup === "GODOWN");
+  doc.text("GODOWN", xCursor + checkboxSize + 5, row6Y);
+  xCursor += 80;
+  drawCheckbox(xCursor, row6Y, consignment?.typeOfPickup === "DOOR");
+  doc.text("DOOR", xCursor + checkboxSize + 5, row6Y);
+
+  // === CENTER PANEL TEXT ===
+  doc.fillColor("red").font("Helvetica-Bold").fontSize(16);
+  // Replaced plain text with stylized logo (adjust x/y/height as needed)
+  drawKVLLogo(doc, centerX + 6, startY + 4, { height: 28, color: "#D11A1A" });
+
+  doc.text("KASHI VISHWANATH LOGISTICS", centerX + 50, startY + 5, {
+    width: centerColWidth - 60,
+    align: "center",
+  });
+
+  doc.fillColor("black").font("Helvetica-Bold").fontSize(11);
+  doc.text(
+    "FLEET OWNERS & TRANSPORT CONTRACTORS",
+    centerX + 5,
+    startY + rowHeight + 5,
+    {
+      width: centerColWidth - 10,
+      align: "center",
+    }
+  );
+  doc.text(
+    "Plot No. 66, Gala No. 20, Vapi Processing Compound Near",
+    centerX + 5,
+    startY + 2 * rowHeight + 5,
+    { width: centerColWidth - 10, align: "center" }
+  );
+  doc.text(
+    "Sunita Textile 1st Phase GIDC Vapi-396 195 (Gujarat)",
+    centerX + 5,
+    startY + 3 * rowHeight + 5,
+    {
+      width: centerColWidth - 10,
+      align: "center",
+    }
+  );
+  doc.text(
+    "Email : kashivishwanathlogistics@gmail.com",
+    centerX + 5,
+    startY + 4 * rowHeight + 5,
+    {
+      width: centerColWidth - 10,
+      align: "center",
+    }
+  );
+  doc.text("Mob.: 9737138629", centerX + 5, startY + 5 * rowHeight + 5, {
+    width: centerColWidth - 10,
+    align: "center",
+  });
+
+  // === RIGHT PANEL TEXT ===
+  doc.font("Helvetica-Bold").fontSize(9).fillColor("red");
+  doc.text("CONSIGNEE COPY", rightX + 5, startY + 5, {
+    width: rightColWidth - 10,
+    align: "center",
+  });
+  doc.fillColor("black");
+  doc.text("CONSIGNMENT NOTE", rightX + 5, startY + rightRowHeight + 10, {
+    width: rightColWidth - 10,
+    align: "center",
+  });
+  // Set to dark gray + different font
+  doc.font("Times-Bold").fontSize(12).fillColor("#141414"); // dark gray (you can also try 'gray' or a custom hex)
+
+  // Draw consignment number
+  doc.text(
+    consignment?.consignmentNumber || "742",
+    rightX + 5,
+    startY + rightRowHeight + 30,
+    {
+      width: rightColWidth - 10,
+      align: "center",
+    }
+  );
+
+  // === Row 7 and 8: 3-column layout with 2 rows ===
+  const row7Y = startY + totalHeight;
+  const twoRowHeight = rowHeight;
+
+  const col1Width = leftColWidth;
+  const col2Width = centerColWidth / 2;
+  const col3Width = centerColWidth / 2 + rightColWidth;
+
+  doc.rect(startX, row7Y, totalWidth, 2 * twoRowHeight).stroke();
+  doc
+    .moveTo(startX, row7Y + twoRowHeight)
+    .lineTo(startX + totalWidth, row7Y + twoRowHeight)
+    .stroke();
+  doc
+    .moveTo(startX + col1Width, row7Y)
+    .lineTo(startX + col1Width, row7Y + 2 * twoRowHeight)
+    .stroke();
+  doc
+    .moveTo(startX + col1Width + col2Width, row7Y)
+    .lineTo(startX + col1Width + col2Width, row7Y + 2 * twoRowHeight)
+    .stroke();
+
+  // --- ROW 7 ---
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("Type of Delivery:", startX + 5, row7Y + 5);
+
+  let checkX = startX + 90;
+  const checkY = row7Y + 2;
+  drawCheckbox(checkX, checkY, consignment?.typeOfDelivery === "GODOWN");
+  doc.text("GODOWN", checkX + checkboxSize + 5, row7Y + 5);
+
+  checkX += 80;
+  drawCheckbox(checkX, checkY, consignment?.typeOfDelivery === "DOOR");
+  doc.text("DOOR", checkX + checkboxSize + 5, row7Y + 5);
+
+  const col2StartX = startX + col1Width + 5;
+  doc.text("BOOKING BRANCH:", col2StartX, row7Y + 5);
+  doc
+    .font("Helvetica-Bold")
+    .text(consignment?.bookingBranch || "", col2StartX + 110, row7Y + 5);
+
+  const col3StartX = startX + col1Width + col2Width + 5;
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("DATE:", col3StartX, row7Y + 5);
+  doc
+    .font("Helvetica-Bold")
+    .text(
+      formatDate(consignment?.bookingDate) || "",
+      col3StartX + 40,
+      row7Y + 5
+    );
+
+  // --- ROW 8 ---
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("From:", startX + 5, row7Y + twoRowHeight + 5);
+  doc
+    .font("Helvetica-Bold")
+    .text(consignment?.fromCity || "", startX + 50, row7Y + twoRowHeight + 5);
+
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("TO:", col2StartX, row7Y + twoRowHeight + 5);
+  doc
+    .font("Helvetica-Bold")
+    .text(consignment?.toCity || "", col2StartX + 35, row7Y + twoRowHeight + 5);
+
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("VEHICLE:", col3StartX, row7Y + twoRowHeight + 5);
+  doc
+    .font("Helvetica-Bold")
+    .text(
+      consignment?.vehicle?.vehicleNumber || "",
+      col3StartX + 60,
+      row7Y + twoRowHeight + 5
+    );
+
+  // === CONSIGNOR/CONSIGNEE SECTION ===
+  const totalHeightRow3 = 95;
+  const mainRowHeight = 60;
+  const subRowHeight = (totalHeightRow3 - mainRowHeight) / 2;
+
+  const row9Y = row7Y + 2 * twoRowHeight;
+  const twoColWidth = totalWidth / 2;
+
+  doc.rect(startX, row9Y, totalWidth, totalHeightRow3).stroke();
+  doc
+    .moveTo(startX + twoColWidth, row9Y)
+    .lineTo(startX + twoColWidth, row9Y + totalHeightRow3)
+    .stroke();
+  doc
+    .moveTo(startX, row9Y + mainRowHeight)
+    .lineTo(startX + totalWidth, row9Y + mainRowHeight)
+    .stroke();
+  doc
+    .moveTo(startX, row9Y + mainRowHeight + subRowHeight)
+    .lineTo(startX + totalWidth, row9Y + mainRowHeight + subRowHeight)
+    .stroke();
+
+  const paddingMain = 15;
+  const paddingSub = 7;
+
+  // CONSIGNOR & CONSIGNEE
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("CONSIGNOR:", startX + 5, row9Y + paddingMain);
+  doc
+    .font("Helvetica-Bold")
+    .text(consignment?.consignor?.name || "", startX + 85, row9Y + paddingMain);
+  doc
+    .font("Helvetica")
+    .text(
+      consignment?.consignor?.address || "",
+      startX + 5,
+      row9Y + paddingMain + 15,
+      {
+        width: twoColWidth - 10,
+      }
+    );
+
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("CONSIGNEE:", startX + twoColWidth + 5, row9Y + paddingMain);
+  doc
+    .font("Helvetica-Bold")
+    .text(
+      consignment?.consignee?.name || "",
+      startX + twoColWidth + 85,
+      row9Y + paddingMain
+    );
+  doc
+    .font("Helvetica")
+    .text(
+      consignment?.consignee?.address || "",
+      startX + twoColWidth + 5,
+      row9Y + paddingMain + 15,
+      {
+        width: twoColWidth - 10,
+      }
+    );
+
+  // Tel./Mob. No.
+  const telY = row9Y + mainRowHeight + paddingSub;
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("Tel./Mob. No.:", startX + 5, telY);
+  doc
+    .font("Helvetica-Bold")
+    .text(consignment?.consignor?.mobile || "", startX + 85, telY);
+
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("Tel./Mob. No.:", startX + twoColWidth + 5, telY);
+  doc
+    .font("Helvetica-Bold")
+    .text(
+      consignment?.consignee?.mobile || "",
+      startX + twoColWidth + 85,
+      telY
+    );
+
+  // G.S.T. No.
+  const gstY = row9Y + mainRowHeight + subRowHeight + paddingSub;
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("G.S.T. No.:", startX + 5, gstY);
+  doc
+    .font("Helvetica-Bold")
+    .text(consignment?.consignor?.gstNumber || "", startX + 85, gstY);
+
+  doc.font("Helvetica").fontSize(9).fillColor("black");
+  doc.text("G.S.T. No.:", startX + twoColWidth + 5, gstY);
+  doc
+    .font("Helvetica-Bold")
+    .text(
+      consignment?.consignee?.gstNumber || "",
+      startX + twoColWidth + 85,
+      gstY
+    );
+
+  // === MAIN TABLE ===
+  const tableX = startX;
+  const tableY = row9Y + totalHeightRow3;
+  const tableW = 802;
+  const tableH = 250;
+
+  const colWidths = [50, 65, 300, 80, 80, 70, 50, 15, 50, 15];
+  const colX = [tableX];
+  for (let i = 0; i < colWidths.length; i++) colX.push(colX[i] + colWidths[i]);
+
+  // Main table border + header
+  doc.rect(tableX, tableY, tableW, tableH).stroke();
+  const headerHeight = 25;
+  doc.rect(tableX, tableY, tableW, headerHeight).stroke();
+
+  const tableRowHeight = (tableH - headerHeight) / 10;
+  const yAtRow = (r) => tableY + headerHeight + r * tableRowHeight;
+
+  // === Custom heights for Invoice/C.Note block ===
+  const invoiceTopLiftPX = 32;
+  const invoiceBottomDropPX = 22;
+  const invTopY = yAtRow(7) - invoiceTopLiftPX;
+  const invBottomY = yAtRow(8) + invoiceBottomDropPX;
+  const cnoteBottomY = yAtRow(9);
+
+  // ---- Vertical lines ----
+  // Full-height verticals (left side + Rate/PerKg divider + left edge of FREIGHT)
+  [1, 2, 3, 5, 6].forEach((i) => {
+    doc
+      .moveTo(colX[i], tableY)
+      .lineTo(colX[i], tableY + tableH)
+      .stroke();
+  });
+  // Center divider (Actual vs Charged) should end EXACTLY on Invoice block top
+  doc.moveTo(colX[4], tableY).lineTo(colX[4], invTopY).stroke();
+
+  // ---- Horizontal lines ----
+  // Right side grid (Rate Per Kg + FREIGHT): skip row 1 line for Rate Per Kg column only
+  for (let r = 1; r <= 10; r++) {
+    const y = yAtRow(r);
+    if (r === 1) {
+      doc
+        .moveTo(colX[6], y)
+        .lineTo(tableX + tableW, y)
+        .stroke();
+    } else {
+      doc
+        .moveTo(colX[5], y)
+        .lineTo(tableX + tableW, y)
+        .stroke();
+    }
+  }
+
+  // Description column: separators for rows 7,8,9
+  [7, 8, 9].forEach((r) => {
+    const y = yAtRow(r);
+    doc.moveTo(colX[2], y).lineTo(colX[3], y).stroke();
+  });
+
+  // Actual+Charged area: custom top/bottom lines for Invoice & C.Note sections
+  [invTopY, invBottomY, cnoteBottomY].forEach((y) => {
+    doc.moveTo(colX[3], y).lineTo(colX[5], y).stroke();
+  });
+
+  // ---- Header labels ----
+  doc.fontSize(9).font("Helvetica-Bold");
+  doc.text("Packages", colX[0] + 2, tableY + 8, {
+    width: colWidths[0],
+    align: "center",
+  });
+  doc.text("Method of\npacking", colX[1] + 2, tableY + 3, {
+    width: colWidths[1],
+    align: "center",
+  });
+  doc.text("Description of (Said to contain)", colX[2] + 2, tableY + 8, {
+    width: colWidths[2],
+  });
+  doc.text("Actual Weight", colX[3] + 2, tableY + 8, {
+    width: colWidths[3],
+    align: "center",
+  });
+  doc.text("Charged Weight", colX[4] + 2, tableY + 8, {
+    width: colWidths[4],
+    align: "center",
+  });
+  doc.text("Rate\nPer Kg", colX[5] + 2, tableY + 3, {
+    width: colWidths[5],
+    align: "center",
+  });
+
+  // FREIGHT header + subheaders
+  doc.text("FREIGHT", colX[6], tableY + 3, {
+    width: colWidths[6] + colWidths[7] + colWidths[8] + colWidths[9],
+    align: "center",
+  });
+
+  // Increase the height of the FREIGHT title band a bit and extend the line to right border
+  const freightTitleLineY = tableY + 14;
+  doc
+    .moveTo(colX[6], freightTitleLineY)
+    .lineTo(tableX + tableW, freightTitleLineY)
+    .stroke();
+
+  // Inner FREIGHT column verticals start from this line
+  [7, 8, 9].forEach((i) => {
+    doc
+      .moveTo(colX[i], freightTitleLineY)
+      .lineTo(colX[i], tableY + tableH)
+      .stroke();
+  });
+
+  // Subheader labels
+  const subHeaderY = freightTitleLineY + 2;
+  doc.fontSize(7);
+  doc.text("Rs. Total", colX[6] + 2, subHeaderY + 2, {
+    width: colWidths[6],
+    align: "center",
+  });
+  doc.text("Ps.", colX[7] + 2, subHeaderY + 2, {
+    width: colWidths[7],
+    align: "center",
+  });
+  doc.text("Rs. Paid", colX[8] + 2, subHeaderY + 2, {
+    width: colWidths[8],
+    align: "center",
+  });
+  doc.text("Ps.", colX[9] + 2, subHeaderY + 2, {
+    width: colWidths[9],
+    align: "center",
+  });
+  // ---- First data row (top) ----
+  const contentY = tableY + headerHeight + 8;
+  doc.fontSize(10).font("Helvetica");
+
+  doc.text(consignment?.packages?.toString() || "", colX[0] + 2, contentY, {
+    width: colWidths[0] - 4,
+    align: "center",
+  });
+  doc.text(consignment?.methodOfPacking || "Cartoon", colX[1] + 2, contentY, {
+    width: colWidths[1] - 4,
+    align: "center",
+  });
+  doc.text(consignment?.description || "", colX[2] + 4, contentY, {
+    width: colWidths[2] - 8,
+  });
+
+  doc.text(
+    consignment?.actualWeight?.toLocaleString("en-IN") || "",
+    colX[3] + 2,
+    contentY,
+    { width: colWidths[3] - 4, align: "center" }
+  );
+  doc.text(
+    consignment?.chargedWeight?.toLocaleString("en-IN") || "",
+    colX[4] + 2,
+    contentY,
+    { width: colWidths[4] - 4, align: "center" }
+  );
+
+  const ratePerKg =
+    consignment?.chargedWeight && consignment.chargedWeight > 0
+      ? (consignment.freight || 0) / consignment.chargedWeight
+      : 0;
+
+  doc.text(ratePerKg.toFixed(2) || "", colX[5] + 2, contentY, {
+    width: colWidths[5] - 4,
+    align: "center",
+  });
+
+  // ---- Description bottom ----
+  const descX = colX[2] + 4;
+  const descRow7Y = yAtRow(7) + 4;
+  const descRow8Y = yAtRow(8) + 4;
+  const descRow9Y = yAtRow(9) + 4;
+
+  doc.fontSize(8).font("Helvetica");
+  doc.text(
+    "Private Marks",
+    colX[2] + 4,
+    tableY + headerHeight + tableRowHeight * 6.5
+  );
+
+  doc.fontSize(8).font("Helvetica-Bold");
+  doc.text("GST PAYABLE BY", descX, descRow7Y);
+  const gstCheckY = descRow7Y + 5;
+  drawCheckbox(descX + 80, gstCheckY, false);
+  doc
+    .font("Helvetica")
+    .fontSize(7)
+    .text("CONSIGNOR", descX + 95, gstCheckY + 2);
+  drawCheckbox(descX + 150, gstCheckY, false);
+  doc.text("CONSIGNEE", descX + 165, gstCheckY + 2);
+  drawCheckbox(descX + 220, gstCheckY, true);
+  doc.text("TRANSPORTER", descX + 235, gstCheckY + 2);
+
+  // Modified section: Left-aligned PAN NO. and GST NO.
+  doc.fontSize(10).font("Helvetica-Bold");
+  doc.text(`PAN NO. ${consignment?.pan || "AWDPM1568J"}`, descX, descRow8Y + 3);
+
+  // Add GST number on the right side of the same row
+  doc.text("GST NO. 24AWDPM1568J1ZF", descX + 150, descRow8Y + 3);
+
+  doc.text("E-way Bill No.:", descX, descRow9Y);
+  doc
+    .font("Helvetica-Bold")
+    .text(consignment?.eWayBillNumber || "", descX + 80, descRow9Y);
+
+  // ==== Merged block content (Invoice/Date/Value and C.Note) ====
+  const mergedLeftX = colX[3] + 8;
+  const mergedCellW = colWidths[3] + colWidths[4] - 16;
+  const invContentPadTop = 6;
+  const invoiceLineGap = 10;
+
+  const invBlockTopY = invTopY + invContentPadTop;
+  doc.font("Helvetica").fontSize(10);
+  const invLines = [
+    `Invoice No.: ${consignment?.invoiceNumber || ""}`,
+    `Date: ${formatDate(consignment?.bookingDate) || ""}`,
+    `Value: ${
+      consignment?.value != null
+        ? consignment.value.toLocaleString("en-IN")
+        : ""
+    }`,
+  ];
+  doc.text(invLines.join("\n"), mergedLeftX, invBlockTopY, {
+    width: mergedCellW,
+    lineGap: invoiceLineGap,
+  });
+
+  const cNoteY = invBottomY + 6;
+  doc.text(
+    `C. Note No.: ${consignment?.consignmentNumber || ""}`,
+    mergedLeftX,
+    cNoteY,
+    { width: mergedCellW }
+  );
+
+  // ---- Charges ----
+  const charges = [
+    { label: "Hamali", value: consignment?.hamali || 0 },
+    { label: "S.T. Ch.", value: consignment?.stCharges || 0 },
+    { label: "DOOR DELIVERY", value: consignment?.DOORDelivery || 0 },
+    { label: "Other Charges", value: consignment?.otherCharges || 0 },
+    { label: "Risk Charges", value: consignment?.riskCharges || 0 },
+    { label: "TOTAL", value: consignment?.freight || 0, bold: true },
+  ];
+  charges.forEach((charge, index) => {
+    const chargeY = tableY + headerHeight + (index + 2) * tableRowHeight + 4;
+    doc.fontSize(8).font(charge.bold ? "Helvetica-Bold" : "Helvetica");
+    doc.text(charge.label, colX[5] + 2, chargeY + 2, {
+      width: colWidths[5] - 4,
+      align: "center",
+    });
+    const chargeRs = Math.floor(charge.value);
+    doc.text(chargeRs.toLocaleString("en-IN"), colX[6] + 2, chargeY + 2, {
+      width: colWidths[6] - 4,
+      align: "center",
+    });
+  });
+
+  // Service Tax & Grand Total
+  const serviceTaxY = tableY + headerHeight + 8 * tableRowHeight + 4;
+  const grandTotalY = tableY + headerHeight + 9 * tableRowHeight + 4;
+
+  doc.fontSize(8).font("Helvetica");
+  doc.text("Service Tax", colX[5] + 2, serviceTaxY + 2, {
+    width: colWidths[5] - 4,
+    align: "center",
+  });
+  const serviceTaxRs = Math.floor(consignment?.serviceTax || 0);
+  doc.text(serviceTaxRs.toLocaleString("en-IN"), colX[6] + 2, serviceTaxY + 2, {
+    width: colWidths[6] - 4,
+    align: "center",
+  });
+
+  doc.font("Helvetica-Bold").text("Grand Total", colX[5] + 2, grandTotalY + 2, {
+    width: colWidths[5] - 4,
+    align: "center",
+  });
+  const grandTotalRs = Math.floor(consignment?.grandTotal || 0);
+  doc.text(grandTotalRs.toLocaleString("en-IN"), colX[6] + 2, grandTotalY + 2, {
+    width: colWidths[6] - 4,
+    align: "center",
+  });
+
+  // === BOTTOM STRIP: Signature (left) + Company (right) ===
+  const stripY = tableY - 8 + tableH + 8; // bottom strip top Y
+  const stripH = 42; // strip ki height
+
+  // Outer border of bottom strip
+  doc.rect(startX, stripY, totalWidth, stripH).stroke();
+
+  // Left: Signature label + signature line
+  doc.fontSize(9).font("Helvetica").fillColor("black");
+  doc.text("Signature of Consignor", startX + 5, stripY + stripH - 14);
+
+  const sigLineY = stripY + stripH - 9;
+  const sigLineStartX = startX + 115;
+  const sigLineEndX = startX + 360;
+  doc.moveTo(sigLineStartX, sigLineY).lineTo(sigLineEndX, sigLineY).stroke();
+
+  // Right: Company name in red, aligned right
+  doc.fillColor("#D11A1A").font("Helvetica-Bold").fontSize(12);
+  doc.text("KASHI VISHWANATH LOGISTICS", startX, stripY + stripH - 18, {
+    width: totalWidth - 10,
+    align: "right",
+  });
+
+  doc.end();
+};
