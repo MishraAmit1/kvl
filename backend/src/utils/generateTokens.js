@@ -22,6 +22,7 @@ export const generateTokens = async (userId) => {
 
 export const cookieOptions = {
   httpOnly: true,
-  sameSite: "strict",
+  sameSite: "None", // ✅ cross-site ke liye allow karo
+  secure: true, // ✅ production me zaroor true rakho
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
