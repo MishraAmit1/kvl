@@ -49,7 +49,7 @@ function App() {
               }
             />
             <Route
-              path="/signup"
+              // path="/signup"
               element={
                 <AuthRedirect>
                   <Signup />
@@ -57,7 +57,7 @@ function App() {
               }
             />
             <Route
-              path="/forgot-password"
+              // path="/forgot-password"
               element={
                 <AuthRedirect>
                   <ForgotPassword />
@@ -82,7 +82,10 @@ function App() {
               <Route path="/load-chalans" element={<LoadChalansPage />} />
               <Route path="/load-chalans/new" element={<LoadChalanForm />} />
               <Route path="/load-chalans/:id" element={<LoadChalanView />} />
-              <Route path="/load-chalans/:id/edit" element={<LoadChalanForm />} />
+              <Route
+                path="/load-chalans/:id/edit"
+                element={<LoadChalanForm />}
+              />
             </Route>
 
             {/* Redirect any unknown routes to login */}

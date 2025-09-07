@@ -118,7 +118,7 @@ const Login = () => {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
 
-            <div className="text-center space-y-2">
+            {/* <div className="text-center space-y-2">
               <Link
                 to="/forgot-password"
                 className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400"
@@ -134,7 +134,7 @@ const Login = () => {
                   Sign up
                 </Link>
               </div>
-            </div>
+            </div> */}
           </form>
         </CardContent>
       </Card>
