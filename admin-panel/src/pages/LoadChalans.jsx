@@ -188,8 +188,8 @@ const LoadChalans = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Load Chalans</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold">Load Chalans</h1>
+          <p className="text-muted-foreground">
             Manage truck load chalans and consignments
           </p>
         </div>
@@ -203,7 +203,7 @@ const LoadChalans = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
+      <div className="bg-card text-card-foreground p-4 rounded-lg border border-border mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -212,7 +212,7 @@ const LoadChalans = () => {
             <select
               value={filters.status}
               onChange={(e) => handleFilterChange("status", e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-input bg-background text-foreground rounded-md px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <option value="">All Status</option>
               <option value="CREATED">Created</option>
@@ -272,10 +272,10 @@ const LoadChalans = () => {
       />
 
       {/* Load Chalans Table */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-card text-card-foreground rounded-lg border border-border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-border bg-card text-card-foreground">
+            <thead className="bg-muted text-muted-foreground">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Chalan Details
@@ -299,7 +299,10 @@ const LoadChalans = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {loadChalans.map((chalan) => (
-                <tr key={chalan._id} className="hover:bg-gray-50">
+                <tr
+                  key={chalan._id}
+                  className="hover:bg-accent/40 transition-colors"
+                >
                   <td className="px-6 py-4">
                     <div>
                       <div className="text-sm font-medium text-gray-900">
@@ -432,10 +435,8 @@ const LoadChalans = () => {
         {loadChalans.length === 0 && (
           <div className="text-center py-12">
             <Package className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              No load chalans found
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium">No load chalans found</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
               Get started by creating a new load chalan.
             </p>
             <div className="mt-6">
