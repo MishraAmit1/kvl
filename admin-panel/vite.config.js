@@ -9,7 +9,7 @@ export default defineConfig({
     port: 5173,
     host: true,
     proxy: {
-      "/api": "http://localhost:3000",
+      "/api": "https://kvl-one.vercel.app",
     },
   },
   resolve: {
@@ -18,21 +18,21 @@ export default defineConfig({
     },
   },
   define: {
-    global: 'globalThis',
+    global: "globalThis",
   },
   optimizeDeps: {
     esbuildOptions: {
       define: {
-        global: 'globalThis'
-      }
-    }
+        global: "globalThis",
+      },
+    },
   },
   build: {
     rollupOptions: {
-      external: ['crypto'],
+      external: ["crypto"],
     },
   },
   ssr: {
-    noExternal: ['react', 'react-dom'],
-  }
+    noExternal: ["react", "react-dom"],
+  },
 });
