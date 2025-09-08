@@ -196,7 +196,7 @@ const Consignments = () => {
         toast.success("Consignment deleted successfully!");
         refetch();
       } catch (err) {
-        toast.error("Failed to delete consignment");
+        toast.error(err?.message || "Failed to delete consignment");
       }
     }
   };
@@ -230,7 +230,7 @@ const Consignments = () => {
       toast.success("PDF downloaded successfully!");
     } catch (err) {
       console.error("Error downloading PDF:", err);
-      toast.error("Failed to download PDF.");
+      toast.error(err?.message || "Failed to download PDF.");
     }
   };
 
@@ -255,7 +255,7 @@ const Consignments = () => {
       const url = window.URL.createObjectURL(blob);
       window.open(url, "_blank");
     } catch (err) {
-      toast.error("Failed to print PDF.");
+      toast.error(err?.message || "Failed to print PDF.");
       console.error(err);
     }
   };
@@ -344,7 +344,9 @@ const Consignments = () => {
       } else if (err.message.includes("weight")) {
         toast.error(err.message);
       } else {
-        toast.error("Failed to save consignment. Please check all fields.");
+        toast.error(
+          err?.message || "Failed to save consignment. Please check all fields."
+        );
       }
     } finally {
       setFormLoading(false);

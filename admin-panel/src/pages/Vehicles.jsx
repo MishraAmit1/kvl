@@ -82,7 +82,7 @@ const VehiclesPage = () => {
       setModalOpen(false);
       refetch();
     } catch (err) {
-      toast.error("Failed to save vehicle. Please try again.");
+      toast.error(err?.message || "Failed to save vehicle. Please try again.");
       console.error(err);
     } finally {
       setFormLoading(false);
@@ -102,7 +102,7 @@ const VehiclesPage = () => {
       setDeleteVehicle(null);
       refetch();
     } catch (err) {
-      toast.error("Failed to delete vehicle. Please try again.");
+      toast.error(err.message || "Failed to delete vehicle. Please try again.");
       console.error(err);
     } finally {
       setFormLoading(false);
@@ -144,7 +144,9 @@ const VehiclesPage = () => {
           {vehicle.insurancePolicyNo || "-"}
         </td>
         <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm hidden 2xl:table-cell">
-          {vehicle.insuranceValidity ? new Date(vehicle.insuranceValidity).toLocaleDateString() : "-"}
+          {vehicle.insuranceValidity
+            ? new Date(vehicle.insuranceValidity).toLocaleDateString()
+            : "-"}
         </td>
         <td className="px-2 sm:px-4 py-2">
           <div className="flex gap-1 sm:gap-2">

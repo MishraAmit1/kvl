@@ -82,7 +82,7 @@ const FreightBillDetails = ({ billId, onClose, onRefresh }) => {
       toast.success("PDF downloaded successfully!");
     } catch (err) {
       console.error("Error downloading PDF:", err);
-      toast.error("Failed to download PDF.");
+      toast.error(err?.message || "Failed to download PDF.");
     } finally {
       setActionLoading(false);
     }
@@ -107,7 +107,7 @@ const FreightBillDetails = ({ billId, onClose, onRefresh }) => {
       const url = window.URL.createObjectURL(blob);
       window.open(url, "_blank");
     } catch (err) {
-      toast.error("Failed to print PDF.");
+      toast.error(err?.message || "Failed to print PDF.");
       console.error(err);
     }
   };

@@ -161,7 +161,7 @@ const FreightBillsPage = () => {
       toast.success("PDF downloaded successfully!");
     } catch (err) {
       console.error("Error downloading PDF:", err);
-      toast.error("Failed to download PDF.");
+      toast.error(err?.message || "Failed to download PDF.");
     }
   };
 
@@ -184,7 +184,7 @@ const FreightBillsPage = () => {
       const url = window.URL.createObjectURL(blob);
       window.open(url, "_blank");
     } catch (err) {
-      toast.error("Failed to print PDF.");
+      toast.error(err.message || "Failed to print PDF.");
       console.error(err);
     }
   };

@@ -82,7 +82,7 @@ const DriversPage = () => {
       setModalOpen(false);
       refetch();
     } catch (err) {
-      toast.error("Failed to save driver. Please try again.");
+      toast.error(err?.message || "Failed to save driver. Please try again.");
       console.error(err);
     } finally {
       setFormLoading(false);
@@ -102,7 +102,7 @@ const DriversPage = () => {
       setDeleteDriver(null);
       refetch();
     } catch (err) {
-      toast.error("Failed to delete driver. Please try again.");
+      toast.error(err?.message || "Failed to delete driver. Please try again.");
       console.error(err);
     } finally {
       setFormLoading(false);

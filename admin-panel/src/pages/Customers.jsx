@@ -87,7 +87,7 @@ const CustomersPage = () => {
       setModalOpen(false);
       refetch();
     } catch (err) {
-      toast.error("Failed to save customer. Please try again.");
+      toast.error(err?.message || "Failed to save customer. Please try again.");
       console.error(err);
     } finally {
       setFormLoading(false);
@@ -109,7 +109,9 @@ const CustomersPage = () => {
       setDeleteCustomer(null);
       refetch();
     } catch (err) {
-      toast.error("Failed to delete customer. Please try again.");
+      toast.error(
+        err?.message || "Failed to delete customer. Please try again."
+      );
       console.error(err);
     } finally {
       setFormLoading(false);

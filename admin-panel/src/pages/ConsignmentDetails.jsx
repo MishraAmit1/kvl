@@ -137,7 +137,7 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
       toast.success("PDF downloaded successfully!");
     } catch (err) {
       console.error("Error downloading PDF:", err);
-      toast.error("Failed to download PDF.");
+      toast.error(err?.message || "Failed to download PDF.");
     }
   };
 
@@ -178,7 +178,7 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
         })
         .catch((err) => {
           console.error("Error fetching data:", err);
-          toast.error("Failed to load vehicles/drivers");
+          toast.error(err?.message || "Failed to load vehicles/drivers");
         })
         .finally(() => setLoading(false));
     }, []);
@@ -945,7 +945,9 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
                 {consignment.vehicle.insuranceValidity && (
                   <div>
                     <span className="font-medium">Valid Until:</span>{" "}
-                    {new Date(consignment.vehicle.insuranceValidity).toLocaleDateString()}
+                    {new Date(
+                      consignment.vehicle.insuranceValidity
+                    ).toLocaleDateString()}
                   </div>
                 )}
                 {consignment.pickupDate && (

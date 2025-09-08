@@ -125,7 +125,7 @@ const LoadChalans = () => {
       await loadChalanApi.downloadPDF(id);
       toast.success("PDF downloaded successfully");
     } catch (error) {
-      toast.error("Failed to download PDF");
+      toast.error(error.message || "Failed to download PDF");
     }
   };
 
@@ -148,7 +148,7 @@ const LoadChalans = () => {
       const url = window.URL.createObjectURL(blob);
       window.open(url, "_blank");
     } catch (err) {
-      toast.error("Failed to print PDF.");
+      toast.error(err.message || "Failed to print PDF.");
       console.error(err);
     }
   };
