@@ -4,6 +4,7 @@ import { sendResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { validateCustomerInput } from "../validation/customerValidation.js";
 // Create new customer
+// Create new customer
 const createCustomer = asyncHandler(async (req, res) => {
   const {
     name,
@@ -17,26 +18,34 @@ const createCustomer = asyncHandler(async (req, res) => {
     panNumber,
     customerType,
   } = req.body;
-  const validationErrors = validateCustomerInput({
+
+  // Empty strings ko undefined me convert karo
+  const cleanedData = {
     name,
-    address,
+    address: address || undefined,
     city,
     state,
     pincode,
     mobile,
-    email,
-    gstNumber,
-    panNumber,
-    customerType,
-  });
+    email: email || undefined,
+    gstNumber: gstNumber || undefined,
+    panNumber: panNumber || undefined,
+    customerType: customerType || "BOTH",
+  };
+
+  const validationErrors = validateCustomerInput(cleanedData);
 
   if (validationErrors.length > 0) {
     throw throwApiError(400, validationErrors.join(", "));
   }
-  // Check if customer already exists
-  const existingCustomer = await Customer.findOne({
-    $or: [{ mobile }, { gstNumber: gstNumber?.toUpperCase() }],
-  });
+
+  // Check if customer already exists - GST check only if provided
+  const orConditions = [{ mobile }];
+  if (gstNumber) {
+    orConditions.push({ gstNumber: gstNumber.toUpperCase() });
+  }
+
+  const existingCustomer = await Customer.findOne({ $or: orConditions });
 
   if (existingCustomer) {
     throw throwApiError(
@@ -54,21 +63,23 @@ const createCustomer = asyncHandler(async (req, res) => {
   }
 
   try {
-    const customer = await Customer.create({
-      name,
-      address,
-      city,
-      state,
-      pincode,
-      mobile,
-      email,
-      gstNumber,
-      panNumber,
-      customerType,
-    });
+    const customer = await Customer.create(cleanedData);
     return sendResponse(res, 201, customer, "Customer created successfully");
   } catch (error) {
-    console.log("Error creating customer:", error.message);
+    console.error("Error creating customer:", error);
+
+    // MongoDB duplicate key error handle karo
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      throw throwApiError(400, `Customer with this ${field} already exists`);
+    }
+
+    // Validation errors handle karo
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      throw throwApiError(400, messages.join(", "));
+    }
+
     throw throwApiError(500, "Failed to create customer");
   }
 });

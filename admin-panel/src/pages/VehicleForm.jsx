@@ -58,7 +58,15 @@ const VehicleForm = ({
     const errs = validate(values);
     setErrors(errs);
     if (Object.keys(errs).length === 0) {
-      onSubmit(values);
+      // Empty strings ko filter kar do
+      const cleanedValues = {};
+      Object.keys(values).forEach((key) => {
+        if (values[key] !== "") {
+          cleanedValues[key] = values[key];
+        }
+      });
+
+      onSubmit(cleanedValues);
     }
   };
 
@@ -181,8 +189,10 @@ const VehicleForm = ({
 
       {/* New fields for Challan & Compliance */}
       <div className="border-t pt-4">
-        <h4 className="font-medium mb-3 text-sm">Challan & Compliance Details</h4>
-        
+        <h4 className="font-medium mb-3 text-sm">
+          Challan & Compliance Details
+        </h4>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">

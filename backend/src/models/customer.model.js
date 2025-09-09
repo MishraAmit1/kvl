@@ -120,5 +120,14 @@ customerSchema.index(
 
 // Text index for search functionality
 customerSchema.index({ name: "text", city: "text", state: "text" });
+// Schema ke baad ye add karo
+customerSchema.pre("save", function (next) {
+  // Empty strings ko undefined bana do
+  if (this.email === "") this.email = undefined;
+  if (this.gstNumber === "") this.gstNumber = undefined;
+  if (this.panNumber === "") this.panNumber = undefined;
+  if (this.address === "") this.address = undefined;
 
+  next();
+});
 export const Customer = mongoose.model("Customer", customerSchema);

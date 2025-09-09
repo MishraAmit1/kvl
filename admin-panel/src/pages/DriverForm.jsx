@@ -41,7 +41,15 @@ const DriverForm = ({
     const errs = validate(values);
     setErrors(errs);
     if (Object.keys(errs).length === 0) {
-      onSubmit(values);
+      // Empty strings ko filter kar do
+      const cleanedValues = {};
+      Object.keys(values).forEach((key) => {
+        if (values[key] !== "") {
+          cleanedValues[key] = values[key];
+        }
+      });
+
+      onSubmit(cleanedValues);
     }
   };
 
