@@ -35,6 +35,9 @@ const createConsignment = asyncHandler(async (req, res) => {
     pan,
     invoiceNumber,
     eWayBillNumber,
+    gstPayableBy,
+    risk,
+    toPay,
   } = req.body;
 
   // Validate required fields
@@ -163,6 +166,9 @@ const createConsignment = asyncHandler(async (req, res) => {
     pan,
     invoiceNumber,
     eWayBillNumber,
+    gstPayableBy: gstPayableBy || "CONSIGNER",
+    risk: risk || "OWNER_RISK",
+    toPay: toPay || "TO-PAY",
     status: "BOOKED",
     createdBy: req.user?._id || null,
   };
@@ -241,6 +247,9 @@ const getAllConsignments = asyncHandler(async (req, res) => {
     toDate,
     fromCity,
     toCity,
+    gstPayableBy,
+    risk,
+    toPay,
   } = req.query;
 
   console.log("=== GET ALL CONSIGNMENTS DEBUG ===");
@@ -253,6 +262,9 @@ const getAllConsignments = asyncHandler(async (req, res) => {
     toDate,
     fromCity,
     toCity,
+    gstPayableBy,
+    risk,
+    toPay,
   });
 
   const query = { isDeleted: false };
@@ -279,6 +291,19 @@ const getAllConsignments = asyncHandler(async (req, res) => {
   // Add status filter
   if (status) {
     query.status = status;
+  }
+
+  // Add new filters
+  if (gstPayableBy) {
+    query.gstPayableBy = gstPayableBy;
+  }
+
+  if (risk) {
+    query.risk = risk;
+  }
+
+  if (toPay) {
+    query.toPay = toPay;
   }
 
   // Add date range filter
@@ -323,6 +348,9 @@ const getAllConsignments = asyncHandler(async (req, res) => {
           _id: consignments[0]._id,
           consignmentNumber: consignments[0].consignmentNumber,
           status: consignments[0].status,
+          gstPayableBy: consignments[0].gstPayableBy,
+          risk: consignments[0].risk,
+          toPay: consignments[0].toPay,
         }
       : "No consignments found"
   );
@@ -444,6 +472,28 @@ const updateConsignment = asyncHandler(async (req, res) => {
         400,
         "Charged weight cannot be less than actual weight"
       );
+    }
+  }
+
+  // Validate new fields if provided
+  if (updateData.gstPayableBy) {
+    const validGstPayableBy = ["CONSIGNER", "CONSIGNEE", "TRANSPORTER"];
+    if (!validGstPayableBy.includes(updateData.gstPayableBy)) {
+      throw throwApiError(400, "Invalid GST Payable By value");
+    }
+  }
+
+  if (updateData.risk) {
+    const validRisk = ["OWNER_RISK", "CARRIER_RISK"];
+    if (!validRisk.includes(updateData.risk)) {
+      throw throwApiError(400, "Invalid Risk value");
+    }
+  }
+
+  if (updateData.toPay) {
+    const validToPay = ["TO-PAY", "TBB", "PAID"];
+    if (!validToPay.includes(updateData.toPay)) {
+      throw throwApiError(400, "Invalid To Pay value");
     }
   }
 
@@ -925,6 +975,7 @@ const publicTracking = asyncHandler(async (req, res) => {
 
   return sendResponse(res, 200, publicInfo, "Tracking info fetched");
 });
+
 const getUnbilledConsignments = asyncHandler(async (req, res) => {
   const { customerId } = req.query;
 
@@ -959,6 +1010,7 @@ const getUnbilledConsignments = asyncHandler(async (req, res) => {
     "Unbilled consignments fetched"
   );
 });
+
 // Schedule pickup for consignment
 const schedulePickup = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -1315,6 +1367,7 @@ const generateConsignmentPDFController = asyncHandler(async (req, res) => {
     throw throwApiError(500, "Failed to generate PDF");
   }
 });
+
 // Add in consignment.controller.js
 const getConsignmentStatistics = asyncHandler(async (req, res) => {
   const stats = await Consignment.aggregate([
@@ -1339,14 +1392,180 @@ const getConsignmentStatistics = asyncHandler(async (req, res) => {
     },
   ]);
 
+  // New statistics for GST, Risk, and ToPay
+  const gstStats = await Consignment.aggregate([
+    { $match: { isDeleted: false } },
+    {
+      $group: {
+        _id: "$gstPayableBy",
+        count: { $sum: 1 },
+        totalValue: { $sum: "$grandTotal" },
+      },
+    },
+  ]);
+
+  const riskStats = await Consignment.aggregate([
+    { $match: { isDeleted: false } },
+    {
+      $group: {
+        _id: "$risk",
+        count: { $sum: 1 },
+        totalValue: { $sum: "$grandTotal" },
+      },
+    },
+  ]);
+
+  const toPayStats = await Consignment.aggregate([
+    { $match: { isDeleted: false } },
+    {
+      $group: {
+        _id: "$toPay",
+        count: { $sum: 1 },
+        totalValue: { $sum: "$grandTotal" },
+      },
+    },
+  ]);
+
   return sendResponse(
     res,
     200,
     {
       statusWise: stats,
       paymentWise: paymentStats,
+      gstPayableBy: gstStats,
+      riskWise: riskStats,
+      toPayWise: toPayStats,
     },
     "Statistics fetched"
+  );
+});
+
+// Get consignments by GST Payable By
+const getConsignmentsByGstPayableBy = asyncHandler(async (req, res) => {
+  const { gstPayableBy } = req.params;
+  const { page = 1, limit = 10 } = req.query;
+
+  const validGstPayableBy = ["CONSIGNER", "CONSIGNEE", "TRANSPORTER"];
+  if (!validGstPayableBy.includes(gstPayableBy)) {
+    throw throwApiError(400, "Invalid GST Payable By value");
+  }
+
+  const skip = (page - 1) * limit;
+
+  const consignments = await Consignment.find({
+    gstPayableBy,
+    isDeleted: false,
+  })
+    .populate("vehicle.vehicleId", "vehicleNumber")
+    .populate("vehicle.driverId", "name")
+    .sort({ bookingDate: -1 })
+    .skip(skip)
+    .limit(parseInt(limit));
+
+  const total = await Consignment.countDocuments({
+    gstPayableBy,
+    isDeleted: false,
+  });
+
+  return sendResponse(
+    res,
+    200,
+    {
+      consignments,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    },
+    "Consignments fetched successfully"
+  );
+});
+
+// Get consignments by Risk
+const getConsignmentsByRisk = asyncHandler(async (req, res) => {
+  const { risk } = req.params;
+  const { page = 1, limit = 10 } = req.query;
+
+  const validRisk = ["OWNER_RISK", "CARRIER_RISK"];
+  if (!validRisk.includes(risk)) {
+    throw throwApiError(400, "Invalid Risk value");
+  }
+
+  const skip = (page - 1) * limit;
+
+  const consignments = await Consignment.find({
+    risk,
+    isDeleted: false,
+  })
+    .populate("vehicle.vehicleId", "vehicleNumber")
+    .populate("vehicle.driverId", "name")
+    .sort({ bookingDate: -1 })
+    .skip(skip)
+    .limit(parseInt(limit));
+
+  const total = await Consignment.countDocuments({
+    risk,
+    isDeleted: false,
+  });
+
+  return sendResponse(
+    res,
+    200,
+    {
+      consignments,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    },
+    "Consignments fetched successfully"
+  );
+});
+
+// Get consignments by To Pay
+const getConsignmentsByToPay = asyncHandler(async (req, res) => {
+  const { toPay } = req.params;
+  const { page = 1, limit = 10 } = req.query;
+
+  const validToPay = ["TO-PAY", "TBB", "PAID"];
+  if (!validToPay.includes(toPay)) {
+    throw throwApiError(400, "Invalid To Pay value");
+  }
+
+  const skip = (page - 1) * limit;
+
+  const consignments = await Consignment.find({
+    toPay,
+    isDeleted: false,
+  })
+    .populate("vehicle.vehicleId", "vehicleNumber")
+    .populate("vehicle.driverId", "name")
+    .sort({ bookingDate: -1 })
+    .skip(skip)
+    .limit(parseInt(limit));
+
+  const total = await Consignment.countDocuments({
+    toPay,
+    isDeleted: false,
+  });
+
+  return sendResponse(
+    res,
+    200,
+    {
+      consignments,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    },
+    "Consignments fetched successfully"
   );
 });
 
@@ -1371,4 +1590,7 @@ export {
   publicTracking,
   getUnbilledConsignments,
   getConsignmentStatistics,
+  getConsignmentsByGstPayableBy,
+  getConsignmentsByRisk,
+  getConsignmentsByToPay,
 };

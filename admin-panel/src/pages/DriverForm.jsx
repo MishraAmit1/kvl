@@ -5,19 +5,13 @@ import { Button } from "../components/ui/button";
 const defaultValues = {
   name: "",
   mobile: "",
-  email: "",
   licenseNumber: "",
-  currentLocation: "",
 };
 
 function validate(values) {
   const errors = {};
   if (!values.name) errors.name = "Name is required";
   if (!values.mobile) errors.mobile = "Mobile is required";
-  else if (!/^\d{10}$/.test(values.mobile))
-    errors.mobile = "Invalid mobile number";
-  if (values.email && !/^\S+@\S+\.\S+$/.test(values.email))
-    errors.email = "Invalid email";
   return errors;
 }
 
@@ -80,31 +74,10 @@ const DriverForm = ({
         )}
       </div>
       <div>
-        <label className="block font-medium mb-1">Email</label>
-        <Input
-          name="email"
-          value={values.email}
-          onChange={handleChange}
-          disabled={loading}
-        />
-        {errors.email && (
-          <div className="text-red-500 text-xs mt-1">{errors.email}</div>
-        )}
-      </div>
-      <div>
         <label className="block font-medium mb-1">License Number</label>
         <Input
           name="licenseNumber"
           value={values.licenseNumber}
-          onChange={handleChange}
-          disabled={loading}
-        />
-      </div>
-      <div>
-        <label className="block font-medium mb-1">Current Location</label>
-        <Input
-          name="currentLocation"
-          value={values.currentLocation}
           onChange={handleChange}
           disabled={loading}
         />

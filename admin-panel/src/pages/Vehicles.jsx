@@ -123,16 +123,16 @@ const VehiclesPage = () => {
           {vehicle.vehicleType}
         </td>
         <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm hidden md:table-cell">
-          {vehicle.lengthFeet}
+          {vehicle.ownerName}
         </td>
         <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm hidden lg:table-cell">
-          {vehicle.flooringType}
+          {vehicle.ownerMobileNumber}
         </td>
         <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm hidden xl:table-cell">
-          {vehicle.flooringMaterial}
+          {vehicle.ownerAadhaarNumber}
         </td>
-        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm hidden sm:table-cell">
-          {vehicle.capacityValue} {vehicle.capacityUnit}
+        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm hidden 2xl:table-cell">
+          {vehicle.ownerAddress}
         </td>
         <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm hidden 2xl:table-cell">
           {vehicle.engineNumber || "-"}
@@ -188,7 +188,7 @@ const VehiclesPage = () => {
           onChange={handleSearch}
           onClear={handleClearSearch}
           loading={isFetching}
-          placeholder="Search by number, type, engine, chassis, insurance..."
+          placeholder="Search by number, type, owner name, mobile, engine, chassis..."
         />
       </Card>
 
@@ -204,16 +204,16 @@ const VehiclesPage = () => {
                   Type
                 </th>
                 <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden md:table-cell">
-                  Length
+                  Owner Name
                 </th>
                 <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden lg:table-cell">
-                  Flooring Type
+                  Mobile Number
                 </th>
                 <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden xl:table-cell">
-                  Flooring Material
+                  Aadhaar Number
                 </th>
-                <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden sm:table-cell">
-                  Capacity
+                <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden 2xl:table-cell">
+                  Address
                 </th>
                 <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden 2xl:table-cell">
                   Engine Number

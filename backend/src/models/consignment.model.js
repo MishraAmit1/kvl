@@ -144,6 +144,39 @@ const consignmentSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+
+    // NEW FIELDS
+    gstPayableBy: {
+      type: String,
+      enum: {
+        values: ["CONSIGNER", "CONSIGNEE", "TRANSPORTER"],
+        message:
+          "GST Payable By must be one of: CONSIGNER, CONSIGNEE, TRANSPORTER",
+      },
+      required: true,
+      default: "CONSIGNER",
+    },
+
+    risk: {
+      type: String,
+      enum: {
+        values: ["OWNER_RISK", "CARRIER_RISK"],
+        message: "Risk must be either OWNER_RISK or CARRIER_RISK",
+      },
+      required: true,
+      default: "OWNER_RISK",
+    },
+
+    toPay: {
+      type: String,
+      enum: {
+        values: ["TO-PAY", "TBB", "PAID"],
+        message: "To Pay must be one of: TO-PAY, TBB, PAID",
+      },
+      required: true,
+      default: "TO-PAY",
+    },
+
     // Assignment Details
     vehicle: {
       vehicleId: {
@@ -293,4 +326,10 @@ consignmentSchema.index({ "consignee.customerId": 1 });
 consignmentSchema.index({ isDeleted: 1 });
 consignmentSchema.index({ paymentStatus: 1 });
 consignmentSchema.index({ billedIn: 1 });
+
+// New indexes for the added fields
+consignmentSchema.index({ gstPayableBy: 1 });
+consignmentSchema.index({ risk: 1 });
+consignmentSchema.index({ toPay: 1 });
+
 export const Consignment = mongoose.model("Consignment", consignmentSchema);

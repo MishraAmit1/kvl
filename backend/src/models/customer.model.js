@@ -44,14 +44,6 @@ const customerSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      match: /^[6-9]\d{9}$/,
-      validate: {
-        validator: function (v) {
-          return /^[6-9]\d{9}$/.test(v);
-        },
-        message:
-          "Mobile number must be a valid 10-digit number starting with 6-9",
-      },
     },
     email: {
       type: String,

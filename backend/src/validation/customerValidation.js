@@ -36,19 +36,6 @@ export const validateCustomerInput = (customerInput) => {
     errors.push("Pincode must be a valid 6-digit number");
   }
 
-  if (mobile && !/^[6-9]\d{9}$/.test(mobile)) {
-    errors.push(
-      "Mobile number must be a valid 10-digit number starting with 6-9"
-    );
-  }
-
-  if (
-    email &&
-    !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)
-  ) {
-    errors.push("Please provide a valid email address");
-  }
-
   if (
     gstNumber &&
     !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstNumber)

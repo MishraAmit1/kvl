@@ -14,7 +14,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     );
 
     // --- Validations ---
-    if (!loadChalan) throw new Error("Load chalan data is required");
+    if (!loadChalan) throw new Error("Load chalan data is requiblack");
     if (!Array.isArray(loadChalan.consignments))
       throw new Error("Load chalan must have consignments array");
     if (loadChalan.consignments.length === 0)
@@ -25,7 +25,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
       const pageW = doc.page.width;
       const pageH = doc.page.height;
       doc.save();
-      doc.fillColor("#D11A1A").opacity(0.06);
+      doc.fillColor("#0000").opacity(0.06);
       doc.font("Helvetica-Bold").fontSize(150);
       doc.rotate(-30, { origin: [pageW / 2, pageH / 2] });
       const wmText = "KVL";
@@ -40,7 +40,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     // === Helpers ===
     const drawKVLLogo = (doc, x, y, opts = {}) => {
       const h = opts.height ?? 18;
-      const color = opts.color ?? "#D11A1A";
+      const color = opts.color ?? "#0000";
       const t = opts.thickness ?? Math.max(2, Math.round(h * 0.2));
       const gap = opts.gap ?? Math.round(h * 0.06);
       const skew = opts.skew ?? Math.max(1, h * 0.09);
@@ -159,7 +159,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
       const convert = (n) => {
         let s = "";
         if (n >= 100) {
-          s += ones[Math.floor(n / 100)] + " Hundred ";
+          s += ones[Math.floor(n / 100)] + " Hundblack ";
           n %= 100;
         }
         if (n >= 20) {
@@ -197,7 +197,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     const margin = 15;
     const pageWidth = doc.page.width;
 
-    drawKVLLogo(doc, margin + 5, margin + 5, { height: 30, color: "#FF0000" });
+    drawKVLLogo(doc, margin + 5, margin + 5, { height: 30, color: "#0000" });
 
     // Mobile
     doc
@@ -206,7 +206,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
       .font("Helvetica-Bold")
       .text("Mob : 9737138629", pageWidth - 150, margin + 8);
 
-    // Challan badge (compact, square corners, red value + border)
+    // Challan badge (compact, square corners, black value + border)
     {
       const label = "Challan:";
       const value = loadChalan.chalanNumber || "N/A";
@@ -228,9 +228,9 @@ export const generateLoadChalanPDF = async (loadChalan) => {
       const boxX = pageWidth - boxW - 20; // align to right border inside page
       const boxY = margin + 30; // thoda niche
 
-      // red border
+      // black border
       doc.save();
-      doc.lineWidth(1.3).strokeColor("#D11A1A");
+      doc.lineWidth(1.3).strokeColor("#0000");
       doc.rect(boxX, boxY, boxW, boxH).stroke();
       doc.restore();
 
@@ -247,14 +247,14 @@ export const generateLoadChalanPDF = async (loadChalan) => {
       doc
         .font("Helvetica-Bold")
         .fontSize(valueFS)
-        .fillColor("#D11A1A")
+        .fillColor("#0000")
         .text(value, labelX + labelW + 8, boxY + 3, { lineBreak: false });
     }
 
     // Company title
     doc
       .fontSize(14)
-      .fillColor("#FF0000")
+      .fillColor("#0000")
       .font("Helvetica-Bold")
       .text("KASHI VISHWANATH LOGISTICS", 0, margin + 12, {
         align: "center",
@@ -564,9 +564,9 @@ export const generateLoadChalanPDF = async (loadChalan) => {
       // REAL Value (goods value)
       const value =
         c.value ??
-        c.declaredValue ??
+        c.declablackValue ??
         c.consignmentId?.value ??
-        c.consignmentId?.declaredValue ??
+        c.consignmentId?.declablackValue ??
         0;
 
       const destination =
@@ -765,9 +765,9 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     prow("Add UnLoading", addUnloading);
     psep();
     prow("Total. :", totalFrt, { color: "#0033CC", bold: true });
-    prow("Less Advance", lessAdvance, { color: "#D11A1A" });
-    prow("Less RTGS", lessRTGS, { color: "#D11A1A" });
-    prow("Less TDS.", lessTDS, { color: "#D11A1A" });
+    prow("Less Advance", lessAdvance, { color: "#0000" });
+    prow("Less RTGS", lessRTGS, { color: "#0000" });
+    prow("Less TDS.", lessTDS, { color: "#0000" });
     psep();
     prow("Balance Freight :", balanceFrt, { bold: true });
 

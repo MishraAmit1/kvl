@@ -16,7 +16,6 @@ const defaultValues = {
   state: "",
   pincode: "",
   mobile: "",
-  email: "",
   gstNumber: "",
   panNumber: "",
   customerType: "CONSIGNOR",
@@ -26,10 +25,6 @@ function validate(values) {
   const errors = {};
   if (!values.name) errors.name = "Name is required";
   if (!values.mobile) errors.mobile = "Mobile is required";
-  else if (!/^\d{10}$/.test(values.mobile))
-    errors.mobile = "Invalid mobile number";
-  if (values.email && !/^\S+@\S+\.\S+$/.test(values.email))
-    errors.email = "Invalid email";
   if (!values.customerType) errors.customerType = "Type is required";
   return errors;
 }
@@ -127,24 +122,13 @@ const CustomerForm = ({
           <label className="block font-medium mb-1">Mobile *</label>
           <Input
             name="mobile"
+            type="number"
             value={values.mobile}
             onChange={handleChange}
             disabled={loading}
           />
           {errors.mobile && (
             <div className="text-red-500 text-xs mt-1">{errors.mobile}</div>
-          )}
-        </div>
-        <div className="flex-1">
-          <label className="block font-medium mb-1">Email</label>
-          <Input
-            name="email"
-            value={values.email}
-            onChange={handleChange}
-            disabled={loading}
-          />
-          {errors.email && (
-            <div className="text-red-500 text-xs mt-1">{errors.email}</div>
           )}
         </div>
       </div>

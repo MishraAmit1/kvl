@@ -8,11 +8,14 @@ const createVehicle = asyncHandler(async (req, res) => {
   const {
     vehicleNumber,
     vehicleType,
-    lengthFeet,
-    flooringType,
-    flooringMaterial,
-    capacityValue,
-    capacityUnit,
+    ownerName,
+    ownerMobileNumber,
+    ownerAadhaarNumber,
+    ownerAddress,
+    engineNumber,
+    chassisNumber,
+    insurancePolicyNo,
+    insuranceValidity,
   } = req.body;
 
   // Check if vehicle with same number already exists
@@ -24,11 +27,14 @@ const createVehicle = asyncHandler(async (req, res) => {
   const vehicle = await Vehicle.create({
     vehicleNumber,
     vehicleType,
-    lengthFeet,
-    flooringType,
-    flooringMaterial,
-    capacityValue,
-    capacityUnit,
+    ownerName,
+    ownerMobileNumber,
+    ownerAadhaarNumber,
+    ownerAddress,
+    engineNumber,
+    chassisNumber,
+    insurancePolicyNo,
+    insuranceValidity,
   });
 
   return sendResponse(res, 201, vehicle, "Vehicle created successfully");
@@ -45,6 +51,8 @@ const getAllVehicles = asyncHandler(async (req, res) => {
     query.$or = [
       { vehicleNumber: { $regex: search, $options: "i" } },
       { vehicleType: { $regex: search, $options: "i" } },
+      { ownerName: { $regex: search, $options: "i" } },
+      { ownerMobileNumber: { $regex: search, $options: "i" } },
       { engineNumber: { $regex: search, $options: "i" } },
       { chassisNumber: { $regex: search, $options: "i" } },
       { insurancePolicyNo: { $regex: search, $options: "i" } },
@@ -155,6 +163,8 @@ const searchVehicles = asyncHandler(async (req, res) => {
     $or: [
       { vehicleNumber: { $regex: q, $options: "i" } },
       { vehicleType: { $regex: q, $options: "i" } },
+      { ownerName: { $regex: q, $options: "i" } },
+      { ownerMobileNumber: { $regex: q, $options: "i" } },
       { engineNumber: { $regex: q, $options: "i" } },
       { chassisNumber: { $regex: q, $options: "i" } },
       { insurancePolicyNo: { $regex: q, $options: "i" } },
@@ -278,28 +288,20 @@ const getAvailableVehicles = asyncHandler(async (req, res) => {
   );
 });
 
-// Get vehicles by capacity range
-const getVehiclesByCapacity = asyncHandler(async (req, res) => {
-  const { minCapacity, maxCapacity } = req.params;
+// Get vehicles by owner mobile number
+const getVehiclesByOwnerMobile = asyncHandler(async (req, res) => {
+  const { mobileNumber } = req.params;
   const { page = 1, limit = 10 } = req.query;
 
   const skip = (page - 1) * limit;
 
-  const vehicles = await Vehicle.find({
-    capacityValue: {
-      $gte: parseFloat(minCapacity),
-      $lte: parseFloat(maxCapacity),
-    },
-  })
-    .sort({ capacityValue: 1 })
+  const vehicles = await Vehicle.find({ ownerMobileNumber: mobileNumber })
+    .sort({ vehicleNumber: 1 })
     .skip(skip)
     .limit(parseInt(limit));
 
   const total = await Vehicle.countDocuments({
-    capacityValue: {
-      $gte: parseFloat(minCapacity),
-      $lte: parseFloat(maxCapacity),
-    },
+    ownerMobileNumber: mobileNumber,
   });
 
   return sendResponse(
@@ -328,5 +330,5 @@ export {
   getVehiclesByType,
   getVehiclesByStatus,
   getAvailableVehicles,
-  getVehiclesByCapacity,
+  getVehiclesByOwnerMobile,
 };

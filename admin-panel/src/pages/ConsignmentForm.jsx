@@ -24,6 +24,9 @@ const defaultValues = {
   insurance: "No",
   typeOfPickup: "GODOWN",
   typeOfDelivery: "GODOWN",
+  gstPayableBy: "CONSIGNER",
+  risk: "OWNER_RISK",
+  toPay: "TO-PAY",
   pan: "",
   invoiceNumber: "",
   eWayBillNumber: "",
@@ -544,6 +547,61 @@ const ConsignmentForm = ({
             </div>
           </div>
 
+          {/* Payment & Risk Options - NEW SECTION */}
+          <div className="border-t pt-4">
+            <h4 className="font-medium mb-3">Payment & Risk Options</h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  GST Payable By
+                </label>
+                <select
+                  name="gstPayableBy"
+                  value={values.gstPayableBy}
+                  onChange={handleChange}
+                  disabled={loading}
+                  className="w-full rounded-md border border-border bg-background text-foreground px-3 py-2 text-sm"
+                >
+                  <option value="CONSIGNER">Consigner</option>
+                  <option value="CONSIGNEE">Consignee</option>
+                  <option value="TRANSPORTER">Transporter</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Risk</label>
+                <select
+                  name="risk"
+                  value={values.risk}
+                  onChange={handleChange}
+                  disabled={loading}
+                  className="w-full rounded-md border border-border bg-background text-foreground px-3 py-2 text-sm"
+                >
+                  <option value="OWNER_RISK">Owner Risk</option>
+                  <option value="CARRIER_RISK">Carrier Risk</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Payment Type
+                </label>
+                <select
+                  name="toPay"
+                  value={values.toPay}
+                  onChange={handleChange}
+                  disabled={loading}
+                  className="w-full rounded-md border border-border bg-background text-foreground px-3 py-2 text-sm"
+                >
+                  <option value="TO-PAY">To Pay</option>
+                  <option value="TBB">TBB (To Be Billed)</option>
+                  <option value="PAID">Paid</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           {/* Additional Charges Section */}
           <div className="border-t pt-4">
             <h4 className="font-medium mb-3 flex items-center gap-2">
@@ -806,7 +864,11 @@ const ConsignmentForm = ({
                         <strong>Type:</strong> {vehicle.vehicleType}
                       </div>
                       <div>
-                        <strong>Capacity:</strong> {vehicle.capacityValue} {vehicle.capacityUnit}
+                        <strong>Owner:</strong> {vehicle.ownerName}
+                      </div>
+                      <div>
+                        <strong>Owner Mobile:</strong>{" "}
+                        {vehicle.ownerMobileNumber}
                       </div>
                       {vehicle.engineNumber && (
                         <div>
@@ -820,12 +882,16 @@ const ConsignmentForm = ({
                       )}
                       {vehicle.insurancePolicyNo && (
                         <div>
-                          <strong>Insurance:</strong> {vehicle.insurancePolicyNo}
+                          <strong>Insurance:</strong>{" "}
+                          {vehicle.insurancePolicyNo}
                         </div>
                       )}
                       {vehicle.insuranceValidity && (
                         <div>
-                          <strong>Valid Until:</strong> {new Date(vehicle.insuranceValidity).toLocaleDateString()}
+                          <strong>Valid Until:</strong>{" "}
+                          {new Date(
+                            vehicle.insuranceValidity
+                          ).toLocaleDateString()}
                         </div>
                       )}
                     </div>
@@ -943,6 +1009,23 @@ const ConsignmentForm = ({
                 </div>
               </div>
             </div>
+
+            {/* Payment & Risk Options */}
+            <div className="border rounded-lg p-3">
+              <h4 className="font-medium mb-2">Payment & Risk Options</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                <div>
+                  <strong>GST Payable By:</strong> {values.gstPayableBy}
+                </div>
+                <div>
+                  <strong>Risk:</strong> {values.risk.replace("_", " ")}
+                </div>
+                <div>
+                  <strong>Payment Type:</strong> {values.toPay}
+                </div>
+              </div>
+            </div>
+
             {/* Charges Breakdown */}
             <div className="border rounded-lg p-3">
               <h4 className="font-medium mb-2">Charges Breakdown</h4>

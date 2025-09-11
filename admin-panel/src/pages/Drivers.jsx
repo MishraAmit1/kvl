@@ -120,15 +120,10 @@ const DriversPage = () => {
         <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm">
           {driver.mobile}
         </td>
-        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm hidden md:table-cell">
-          {driver.email}
-        </td>
         <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm hidden lg:table-cell">
           {driver.licenseNumber}
         </td>
-        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm hidden xl:table-cell">
-          {driver.currentLocation}
-        </td>
+
         <td className="px-2 sm:px-4 py-2">
           <div className="flex gap-1 sm:gap-2">
             <Button
@@ -184,14 +179,8 @@ const DriversPage = () => {
                 <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
                   Mobile
                 </th>
-                <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden md:table-cell">
-                  Email
-                </th>
                 <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden lg:table-cell">
                   License
-                </th>
-                <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden xl:table-cell">
-                  Location
                 </th>
                 <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
                   Actions

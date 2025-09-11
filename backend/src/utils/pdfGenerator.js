@@ -9,6 +9,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
     `attachment; filename=consignment-${consignment.consignmentNumber}.pdf`
   );
   doc.pipe(res);
+
   // === WATERMARK (very light, behind everything) ===
   {
     const pageW = doc.page.width;
@@ -16,11 +17,11 @@ export const generateConsignmentPDF = async (consignment, res) => {
 
     doc.save();
 
-    // Very faint brand red
-    doc.fillColor("#D11A1A").opacity(0.06); // 6% opacity (0.04–0.08 try kar sakte ho)
+    // Very faint brand black
+    doc.fillColor("#0000").opacity(0.06);
     doc.font("Helvetica-Bold");
 
-    const wmSize = 260; // size adjust: 220–300
+    const wmSize = 260;
     doc.fontSize(wmSize);
 
     // Rotate around center so placement consistent
@@ -31,12 +32,12 @@ export const generateConsignmentPDF = async (consignment, res) => {
 
     // Center the text on the page
     const x = (pageW - wmWidth) / 2;
-    const y = (pageH - wmSize) / 2; // approx vertical center
+    const y = (pageH - wmSize) / 2;
     doc.text(wmText, x, y);
 
-    doc.restore(); // reset rotation/opacity so rest of PDF is unaffected
+    doc.restore();
   }
-  // === END WATERMARK ===
+
   // Helpers
   const formatDate = (date) => {
     if (!date) return "";
@@ -57,21 +58,20 @@ export const generateConsignmentPDF = async (consignment, res) => {
     }
   };
 
-  // Clean, professional KVL logo using filled polygons (no stroke fuzz)
+  // Clean, professional KVL logo using filled polygons
   const drawKVLLogo = (doc, x, y, opts = {}) => {
-    const h = opts.height ?? 18; // overall height
-    const color = opts.color ?? "#D11A1A"; // brand red
-    const t = opts.thickness ?? Math.max(2, Math.round(h * 0.2)); // weight ~20%
-    const gap = opts.gap ?? Math.round(h * 0.06); // K bar gap from slants
-    const skew = opts.skew ?? Math.max(1, h * 0.09); // L top slant
+    const h = opts.height ?? 18;
+    const color = opts.color ?? "#0000";
+    const t = opts.thickness ?? Math.max(2, Math.round(h * 0.2));
+    const gap = opts.gap ?? Math.round(h * 0.06);
+    const skew = opts.skew ?? Math.max(1, h * 0.09);
 
-    // helper: draw a thick band between two points as a filled quad
     const band = (x1, y1, x2, y2, w) => {
       const dx = x2 - x1,
         dy = y2 - y1;
       const len = Math.hypot(dx, dy) || 1;
       const nx = -dy / len,
-        ny = dx / len; // unit normal
+        ny = dx / len;
       const hw = w / 2;
 
       doc
@@ -86,29 +86,28 @@ export const generateConsignmentPDF = async (consignment, res) => {
     doc.save();
     doc.fillColor(color).miterLimit(2).lineJoin("miter").lineCap("butt");
 
-    // K: vertical bar (solid)
+    // K: vertical bar
     doc.rect(x, y, t, h).fill();
 
-    // K: two slanted arms (solid bands)
+    // K: two slanted arms
     const kJointX = x + t + gap;
     const kJointY = y + h * 0.5;
-    const kEndX = x + h * 0.52; // reach a bit right for boldness
-    band(kJointX, kJointY, kEndX, y + h * 0.12, t); // upper arm
-    band(kJointX, kJointY, kEndX, y + h * 0.88, t); // lower arm
+    const kEndX = x + h * 0.52;
+    band(kJointX, kJointY, kEndX, y + h * 0.12, t);
+    band(kJointX, kJointY, kEndX, y + h * 0.88, t);
 
-    // V: check-mark (two solid bands, deeper apex)
+    // V: check-mark
     const vLeftX = x + h * 0.6;
     const vLeftY = y + h * 0.14;
     const vApexX = x + h * 0.78;
-    const vApexY = y + h * 0.72; // deeper apex for that 'tick' look
+    const vApexY = y + h * 0.72;
     const vRightX = x + h * 1.05;
     const vRightY = y + h * 0.1;
     band(vLeftX, vLeftY, vApexX, vApexY, t);
     band(vApexX, vApexY, vRightX, vRightY, t);
 
-    // L: vertical with slanted top + foot (all filled)
-    const lX = x + h * 1.12; // slight shift to the right for spacing
-    // Slanted-top vertical (parallelogram)
+    // L: vertical with slanted top + foot
+    const lX = x + h * 1.12;
     doc
       .moveTo(lX, y)
       .lineTo(lX + t, y + skew)
@@ -117,7 +116,6 @@ export const generateConsignmentPDF = async (consignment, res) => {
       .closePath()
       .fill();
 
-    // L foot (long base)
     const footLen = h * 0.5;
     doc.rect(lX, y + h - t, footLen, t).fill();
 
@@ -198,13 +196,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
   doc
     .font("Helvetica")
     .text("Value Rs.", startX + 5, startY + 4 * rowHeight + 5);
-  // doc
-  //   .font("Helvetica-Bold")
-  //   .text(
-  //     consignment?.value?.toLocaleString("en-IN") || "",
-  //     startX + 60,
-  //     startY + 4 * rowHeight + 5
-  //   );
+
   doc
     .font("Helvetica")
     .text("Type of Pkg up:", startX + 5, startY + 5 * rowHeight + 5);
@@ -219,9 +211,8 @@ export const generateConsignmentPDF = async (consignment, res) => {
   doc.text("DOOR", xCursor + checkboxSize + 5, row6Y);
 
   // === CENTER PANEL TEXT ===
-  doc.fillColor("red").font("Helvetica-Bold").fontSize(16);
-  // Replaced plain text with stylized logo (adjust x/y/height as needed)
-  drawKVLLogo(doc, centerX + 6, startY + 4, { height: 28, color: "#D11A1A" });
+  doc.fillColor("black").font("Helvetica-Bold").fontSize(16);
+  drawKVLLogo(doc, centerX + 6, startY + 4, { height: 28, color: "#0000" });
 
   doc.text("KASHI VISHWANATH LOGISTICS", centerX + 50, startY + 5, {
     width: centerColWidth - 60,
@@ -268,7 +259,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
   });
 
   // === RIGHT PANEL TEXT ===
-  doc.font("Helvetica-Bold").fontSize(9).fillColor("red");
+  doc.font("Helvetica-Bold").fontSize(9).fillColor("black");
   doc.text("CONSIGNEE COPY", rightX + 5, startY + 5, {
     width: rightColWidth - 10,
     align: "center",
@@ -278,10 +269,8 @@ export const generateConsignmentPDF = async (consignment, res) => {
     width: rightColWidth - 10,
     align: "center",
   });
-  // Set to dark gray + different font
-  doc.font("Times-Bold").fontSize(12).fillColor("#141414"); // dark gray (you can also try 'gray' or a custom hex)
 
-  // Draw consignment number
+  doc.font("Times-Bold").fontSize(12).fillColor("#141414");
   doc.text(
     consignment?.consignmentNumber || "742",
     rightX + 5,
@@ -491,18 +480,15 @@ export const generateConsignmentPDF = async (consignment, res) => {
   const cnoteBottomY = yAtRow(9);
 
   // ---- Vertical lines ----
-  // Full-height verticals (left side + Rate/PerKg divider + left edge of FREIGHT)
   [1, 2, 3, 5, 6].forEach((i) => {
     doc
       .moveTo(colX[i], tableY)
       .lineTo(colX[i], tableY + tableH)
       .stroke();
   });
-  // Center divider (Actual vs Charged) should end EXACTLY on Invoice block top
   doc.moveTo(colX[4], tableY).lineTo(colX[4], invTopY).stroke();
 
   // ---- Horizontal lines ----
-  // Right side grid (Rate Per Kg + FREIGHT): skip row 1 line for Rate Per Kg column only
   for (let r = 1; r <= 10; r++) {
     const y = yAtRow(r);
     if (r === 1) {
@@ -524,7 +510,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
     doc.moveTo(colX[2], y).lineTo(colX[3], y).stroke();
   });
 
-  // Actual+Charged area: custom top/bottom lines for Invoice & C.Note sections
+  // Actual+Charged area: custom top/bottom lines
   [invTopY, invBottomY, cnoteBottomY].forEach((y) => {
     doc.moveTo(colX[3], y).lineTo(colX[5], y).stroke();
   });
@@ -555,20 +541,18 @@ export const generateConsignmentPDF = async (consignment, res) => {
     align: "center",
   });
 
-  // FREIGHT header + subheaders
+  // FREIGHT header
   doc.text("FREIGHT", colX[6], tableY + 3, {
     width: colWidths[6] + colWidths[7] + colWidths[8] + colWidths[9],
     align: "center",
   });
 
-  // Increase the height of the FREIGHT title band a bit and extend the line to right border
   const freightTitleLineY = tableY + 14;
   doc
     .moveTo(colX[6], freightTitleLineY)
     .lineTo(tableX + tableW, freightTitleLineY)
     .stroke();
 
-  // Inner FREIGHT column verticals start from this line
   [7, 8, 9].forEach((i) => {
     doc
       .moveTo(colX[i], freightTitleLineY)
@@ -595,9 +579,32 @@ export const generateConsignmentPDF = async (consignment, res) => {
     width: colWidths[9],
     align: "center",
   });
-  // ---- First data row (top) ----
+
+  // === Add toPay text in Rs. Paid column center (rotated) ===
+  if (consignment?.toPay) {
+    doc.save();
+
+    // Calculate center position of Rs. Paid column
+    const rsPaidCenterX = colX[8] + colWidths[8] / 2;
+    const rsPaidCenterY = tableY + headerHeight + (tableH - headerHeight) / 2;
+
+    // Move to center and rotate
+    doc.translate(rsPaidCenterX, rsPaidCenterY);
+    doc.rotate(-45);
+
+    // Draw the toPay text
+    doc.fontSize(20).font("Helvetica-Bold").fillColor("#0000").opacity(0.3);
+    doc.text(consignment.toPay, -30, -10, {
+      width: 60,
+      align: "center",
+    });
+
+    doc.restore();
+  }
+
+  // ---- First data row ----
   const contentY = tableY + headerHeight + 8;
-  doc.fontSize(10).font("Helvetica");
+  doc.fontSize(10).font("Helvetica").fillColor("black");
 
   doc.text(consignment?.packages?.toString() || "", colX[0] + 2, contentY, {
     width: colWidths[0] - 4,
@@ -634,37 +641,59 @@ export const generateConsignmentPDF = async (consignment, res) => {
     align: "center",
   });
 
+  const freightRs = Math.floor(consignment?.freight || 0);
+  doc.text(freightRs.toLocaleString("en-IN"), colX[6] + 2, contentY, {
+    width: colWidths[6] - 4,
+    align: "center",
+  });
+
   // ---- Description bottom ----
   const descX = colX[2] + 4;
   const descRow7Y = yAtRow(7) + 4;
   const descRow8Y = yAtRow(8) + 4;
   const descRow9Y = yAtRow(9) + 4;
 
-  doc.fontSize(8).font("Helvetica");
-  doc.text(
-    "Private Marks",
-    colX[2] + 4,
-    tableY + headerHeight + tableRowHeight * 6.5
-  );
+  // === RISK section (replacing Private Marks) ===
+  doc.fontSize(8).font("Helvetica-Bold");
+  doc.text("RISK", colX[2] + 4, tableY + headerHeight + tableRowHeight * 6.5);
+  const riskCheckY = tableY + headerHeight + tableRowHeight * 6.5 - 2;
+  drawCheckbox(descX + 40, riskCheckY, consignment?.risk === "OWNER_RISK");
+  doc
+    .font("Helvetica")
+    .fontSize(7)
+    .text("OWNER RISK", descX + 55, riskCheckY + 2);
+  drawCheckbox(descX + 120, riskCheckY, consignment?.risk === "CARRIER_RISK");
+  doc.text("CARRIER RISK", descX + 135, riskCheckY + 2);
 
+  // === GST PAYABLE BY section (dynamic checkboxes) ===
   doc.fontSize(8).font("Helvetica-Bold");
   doc.text("GST PAYABLE BY", descX, descRow7Y);
   const gstCheckY = descRow7Y + 5;
-  drawCheckbox(descX + 80, gstCheckY, false);
+  drawCheckbox(
+    descX + 80,
+    gstCheckY,
+    consignment?.gstPayableBy === "CONSIGNER"
+  );
   doc
     .font("Helvetica")
     .fontSize(7)
     .text("CONSIGNOR", descX + 95, gstCheckY + 2);
-  drawCheckbox(descX + 150, gstCheckY, false);
+  drawCheckbox(
+    descX + 150,
+    gstCheckY,
+    consignment?.gstPayableBy === "CONSIGNEE"
+  );
   doc.text("CONSIGNEE", descX + 165, gstCheckY + 2);
-  drawCheckbox(descX + 220, gstCheckY, true);
+  drawCheckbox(
+    descX + 220,
+    gstCheckY,
+    consignment?.gstPayableBy === "TRANSPORTER"
+  );
   doc.text("TRANSPORTER", descX + 235, gstCheckY + 2);
 
-  // Modified section: Left-aligned PAN NO. and GST NO.
+  // PAN and GST numbers
   doc.fontSize(10).font("Helvetica-Bold");
   doc.text(`PAN NO. ${consignment?.pan || "AWDPM1568J"}`, descX, descRow8Y + 3);
-
-  // Add GST number on the right side of the same row
   doc.text("GST NO. 24AWDPM1568J1ZF", descX + 150, descRow8Y + 3);
 
   doc.text("E-way Bill No.:", descX, descRow9Y);
@@ -672,7 +701,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
     .font("Helvetica-Bold")
     .text(consignment?.eWayBillNumber || "", descX + 80, descRow9Y);
 
-  // ==== Merged block content (Invoice/Date/Value and C.Note) ====
+  // ==== Merged block content ====
   const mergedLeftX = colX[3] + 8;
   const mergedCellW = colWidths[3] + colWidths[4] - 16;
   const invContentPadTop = 6;
@@ -702,15 +731,32 @@ export const generateConsignmentPDF = async (consignment, res) => {
     { width: mergedCellW }
   );
 
-  // ---- Charges ----
+  // ---- Calculate all charges ----
+  const hamali = consignment?.hamali || 0;
+  const stCharges = consignment?.stCharges || 0;
+  const doorDelivery = consignment?.doorDelivery || 0;
+  const otherCharges = consignment?.otherCharges || 0;
+  const riskCharges = consignment?.riskCharges || 0;
+  const freight = consignment?.freight || 0;
+
+  const chargesSubtotal =
+    hamali + stCharges + doorDelivery + otherCharges + riskCharges;
+
+  const totalWithFreight = freight + chargesSubtotal;
+
+  const serviceTax = consignment?.serviceTax || 0;
+  const grandTotal = consignment?.grandTotal || totalWithFreight + serviceTax;
+
+  // ---- Display charges ----
   const charges = [
-    { label: "Hamali", value: consignment?.hamali || 0 },
-    { label: "S.T. Ch.", value: consignment?.stCharges || 0 },
-    { label: "DOOR DELIVERY", value: consignment?.DOORDelivery || 0 },
-    { label: "Other Charges", value: consignment?.otherCharges || 0 },
-    { label: "Risk Charges", value: consignment?.riskCharges || 0 },
-    { label: "TOTAL", value: consignment?.freight || 0, bold: true },
+    { label: "Hamali", value: hamali },
+    { label: "S.T. Ch.", value: stCharges },
+    { label: "DOOR DELIVERY", value: doorDelivery },
+    { label: "Other Charges", value: otherCharges },
+    { label: "Risk Charges", value: riskCharges },
+    { label: "TOTAL", value: totalWithFreight, bold: true },
   ];
+
   charges.forEach((charge, index) => {
     const chargeY = tableY + headerHeight + (index + 2) * tableRowHeight + 4;
     doc.fontSize(8).font(charge.bold ? "Helvetica-Bold" : "Helvetica");
@@ -725,7 +771,6 @@ export const generateConsignmentPDF = async (consignment, res) => {
     });
   });
 
-  // Service Tax & Grand Total
   const serviceTaxY = tableY + headerHeight + 8 * tableRowHeight + 4;
   const grandTotalY = tableY + headerHeight + 9 * tableRowHeight + 4;
 
@@ -734,7 +779,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
     width: colWidths[5] - 4,
     align: "center",
   });
-  const serviceTaxRs = Math.floor(consignment?.serviceTax || 0);
+  const serviceTaxRs = Math.floor(serviceTax);
   doc.text(serviceTaxRs.toLocaleString("en-IN"), colX[6] + 2, serviceTaxY + 2, {
     width: colWidths[6] - 4,
     align: "center",
@@ -744,20 +789,18 @@ export const generateConsignmentPDF = async (consignment, res) => {
     width: colWidths[5] - 4,
     align: "center",
   });
-  const grandTotalRs = Math.floor(consignment?.grandTotal || 0);
+  const grandTotalRs = Math.floor(grandTotal);
   doc.text(grandTotalRs.toLocaleString("en-IN"), colX[6] + 2, grandTotalY + 2, {
     width: colWidths[6] - 4,
     align: "center",
   });
 
-  // === BOTTOM STRIP: Signature (left) + Company (right) ===
-  const stripY = tableY - 8 + tableH + 8; // bottom strip top Y
-  const stripH = 42; // strip ki height
+  // === BOTTOM STRIP ===
+  const stripY = tableY - 8 + tableH + 8;
+  const stripH = 42;
 
-  // Outer border of bottom strip
   doc.rect(startX, stripY, totalWidth, stripH).stroke();
 
-  // Left: Signature label + signature line
   doc.fontSize(9).font("Helvetica").fillColor("black");
   doc.text("Signature of Consignor", startX + 5, stripY + stripH - 14);
 
@@ -766,8 +809,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
   const sigLineEndX = startX + 360;
   doc.moveTo(sigLineStartX, sigLineY).lineTo(sigLineEndX, sigLineY).stroke();
 
-  // Right: Company name in red, aligned right
-  doc.fillColor("#D11A1A").font("Helvetica-Bold").fontSize(12);
+  doc.fillColor("#0000").font("Helvetica-Bold").fontSize(12);
   doc.text("KASHI VISHWANATH LOGISTICS", startX, stripY + stripH - 18, {
     width: totalWidth - 10,
     align: "right",

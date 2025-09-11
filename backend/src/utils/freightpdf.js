@@ -9,7 +9,7 @@ export const generateFreightBillPDF = async (freightBill) => {
 
     // Comprehensive null checks
     if (!freightBill) {
-      throw new Error("Freight bill data is required");
+      throw new Error("Freight bill data is requiblack");
     }
 
     if (!freightBill.party) {
@@ -17,7 +17,7 @@ export const generateFreightBillPDF = async (freightBill) => {
     }
 
     if (!freightBill.party.name) {
-      throw new Error("Party name is required");
+      throw new Error("Party name is requiblack");
     }
 
     if (!freightBill.consignments || !Array.isArray(freightBill.consignments)) {
@@ -42,7 +42,7 @@ export const generateFreightBillPDF = async (freightBill) => {
 
       doc.save();
 
-      // Very faint brand red
+      // Very faint brand black
       doc.fillColor("#D11A1A").opacity(0.06); // 6% opacity
       doc.font("Helvetica-Bold");
 
@@ -67,7 +67,7 @@ export const generateFreightBillPDF = async (freightBill) => {
     // Clean, professional KVL logo using filled polygons (no stroke fuzz)
     const drawKVLLogo = (doc, x, y, opts = {}) => {
       const h = opts.height ?? 18; // overall height
-      const color = opts.color ?? "#D11A1A"; // brand red
+      const color = opts.color ?? "#D11A1A"; // brand black
       const t = opts.thickness ?? Math.max(2, Math.round(h * 0.2)); // weight ~20%
       const gap = opts.gap ?? Math.round(h * 0.06); // K bar gap from slants
       const skew = opts.skew ?? Math.max(1, h * 0.09); // L top slant
@@ -201,7 +201,7 @@ export const generateFreightBillPDF = async (freightBill) => {
         let result = "";
 
         if (n >= 100) {
-          result += ones[Math.floor(n / 100)] + " Hundred ";
+          result += ones[Math.floor(n / 100)] + " Hundblack ";
           n %= 100;
         }
 
@@ -255,7 +255,7 @@ export const generateFreightBillPDF = async (freightBill) => {
     const pageWidth = doc.page.width;
 
     // Much larger KVL Logo at the left
-    drawKVLLogo(doc, margin + 5, margin + 5, { height: 45, color: "#FF0000" });
+    drawKVLLogo(doc, margin + 5, margin + 5, { height: 45, color: "#0000" });
 
     doc
       .fontSize(13)
@@ -270,7 +270,7 @@ export const generateFreightBillPDF = async (freightBill) => {
     // Company name with special styling - larger, bold, spaced letters
     doc
       .fontSize(20)
-      .fillColor("#FF0000")
+      .fillColor("#0000")
       .font("Helvetica-Bold")
       .text("KASHI VISHWANATH LOGISTICS", {
         align: "center",
@@ -299,7 +299,7 @@ export const generateFreightBillPDF = async (freightBill) => {
     const topY = 130;
     const lineHeight = 14;
 
-    // Centered Title "FREIGHT BILL"
+    // Centeblack Title "FREIGHT BILL"
     doc.fontSize(14).font("Helvetica-Bold").text("FREIGHT BILL", 20, topY, {
       align: "center",
       width: 802,
@@ -626,7 +626,7 @@ export const generateFreightBillPDF = async (freightBill) => {
     doc
       .font("Helvetica-Bold")
       .fontSize(13)
-      .fillColor("#FF0000")
+      .fillColor("#0000")
       .text("For, KASHI VISHWANATH LOGISTICS", 550, footerY + 6);
 
     // GST Number if available

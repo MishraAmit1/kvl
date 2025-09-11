@@ -11,7 +11,6 @@ import {
   getVehiclesByType,
   getVehiclesByStatus,
   getAvailableVehicles,
-  getVehiclesByCapacity,
 } from "../controllers/vehicle.controller.js";
 
 const router = express.Router();
@@ -43,8 +42,5 @@ router.get("/status/:status", getVehiclesByStatus); // Get vehicles by status (A
 
 // Get available vehicles
 router.get("/available", getAvailableVehicles); // Get all available vehicles
-
-// Get vehicles by capacity
-router.get("/capacity/:minCapacity/:maxCapacity", getVehiclesByCapacity); // Get vehicles by capacity range
 
 export default router;

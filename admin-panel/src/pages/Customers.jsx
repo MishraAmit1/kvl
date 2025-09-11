@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
 import { Card } from "../components/ui/card";
 import ApiService from "../services/api";
 import CustomerForm from "./CustomerForm";
@@ -127,7 +126,6 @@ const CustomersPage = () => {
       >
         <td className="px-4 py-2">{customer.name}</td>
         <td className="px-4 py-2">{customer.mobile}</td>
-        <td className="px-4 py-2">{customer.email}</td>
         <td className="px-4 py-2">{customer.city}</td>
         <td className="px-4 py-2">{customer.customerType}</td>
         <td className="px-4 py-2">
@@ -164,7 +162,7 @@ const CustomersPage = () => {
           onChange={handleSearch}
           onClear={handleClearSearch}
           loading={isFetching}
-          placeholder="Search by name, mobile, email, city..."
+          placeholder="Search by name, mobile, city..."
         />
       </Card>
       <Card className="overflow-x-auto">
@@ -177,9 +175,6 @@ const CustomersPage = () => {
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium uppercase">
                   Mobile
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium uppercase">
-                  Email
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium uppercase">
                   City

@@ -10,16 +10,14 @@ const VEHICLE_TYPES = [
   "TRAILER",
   "CONTAINER",
 ];
-const CAPACITY_UNITS = ["KG", "TON", "LITRE", "CBM"];
 
 const defaultValues = {
   vehicleNumber: "",
   vehicleType: "TRUCK",
-  lengthFeet: "",
-  flooringType: "",
-  flooringMaterial: "",
-  capacityValue: "",
-  capacityUnit: "KG",
+  ownerName: "",
+  ownerMobileNumber: "",
+  ownerAadhaarNumber: "",
+  ownerAddress: "",
   engineNumber: "",
   chassisNumber: "",
   insurancePolicyNo: "",
@@ -28,13 +26,45 @@ const defaultValues = {
 
 function validate(values) {
   const errors = {};
+
+  // Required fields
   if (!values.vehicleNumber)
     errors.vehicleNumber = "Vehicle number is required";
   if (!values.vehicleType) errors.vehicleType = "Type is required";
-  if (values.lengthFeet && isNaN(Number(values.lengthFeet)))
-    errors.lengthFeet = "Length must be a number";
-  if (values.capacityValue && isNaN(Number(values.capacityValue)))
-    errors.capacityValue = "Capacity must be a number";
+  if (!values.ownerName) errors.ownerName = "Owner name is required";
+  if (!values.ownerMobileNumber)
+    errors.ownerMobileNumber = "Mobile number is required";
+  if (!values.ownerAadhaarNumber)
+    errors.ownerAadhaarNumber = "Aadhaar number is required";
+  if (!values.ownerAddress) errors.ownerAddress = "Owner address is required";
+
+  // Vehicle number format validation
+  if (
+    values.vehicleNumber &&
+    !/^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$/.test(
+      values.vehicleNumber.toUpperCase()
+    )
+  ) {
+    errors.vehicleNumber = "Vehicle number must be in format: KA01AB1234";
+  }
+
+  // Mobile number validation
+  if (
+    values.ownerMobileNumber &&
+    !/^[6-9]\d{9}$/.test(values.ownerMobileNumber)
+  ) {
+    errors.ownerMobileNumber =
+      "Mobile number must be a valid 10-digit Indian mobile number";
+  }
+
+  // Aadhaar number validation
+  if (
+    values.ownerAadhaarNumber &&
+    !/^\d{12}$/.test(values.ownerAadhaarNumber)
+  ) {
+    errors.ownerAadhaarNumber = "Aadhaar number must be exactly 12 digits";
+  }
+
   return errors;
 }
 
@@ -50,7 +80,14 @@ const VehicleForm = ({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setValues((v) => ({ ...v, [name]: value }));
+    let processedValue = value;
+
+    // Auto uppercase for vehicle number
+    if (name === "vehicleNumber") {
+      processedValue = value.toUpperCase();
+    }
+
+    setValues((v) => ({ ...v, [name]: processedValue }));
   };
 
   const handleSubmit = (e) => {
@@ -58,7 +95,7 @@ const VehicleForm = ({
     const errs = validate(values);
     setErrors(errs);
     if (Object.keys(errs).length === 0) {
-      // Empty strings ko filter kar do
+      // Filter out empty strings
       const cleanedValues = {};
       Object.keys(values).forEach((key) => {
         if (values[key] !== "") {
@@ -81,6 +118,7 @@ const VehicleForm = ({
           value={values.vehicleNumber}
           onChange={handleChange}
           disabled={loading}
+          placeholder="KA01AB1234"
           className="text-sm"
         />
         {errors.vehicleNumber && (
@@ -110,87 +148,98 @@ const VehicleForm = ({
         )}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-1">Length (feet)</label>
-        <Input
-          name="lengthFeet"
-          value={values.lengthFeet}
-          onChange={handleChange}
-          disabled={loading}
-          className="text-sm"
-        />
-        {errors.lengthFeet && (
-          <div className="text-red-500 text-xs mt-1">{errors.lengthFeet}</div>
-        )}
-      </div>
+      {/* Owner Details Section */}
+      <div className="border-t pt-4">
+        <h4 className="font-medium mb-3 text-sm">Owner Details</h4>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Flooring Type
-          </label>
-          <Input
-            name="flooringType"
-            value={values.flooringType}
-            onChange={handleChange}
-            disabled={loading}
-            className="text-sm"
-          />
-        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Owner Name *
+            </label>
+            <Input
+              name="ownerName"
+              value={values.ownerName}
+              onChange={handleChange}
+              disabled={loading}
+              placeholder="Enter owner's full name"
+              className="text-sm"
+            />
+            {errors.ownerName && (
+              <div className="text-red-500 text-xs mt-1">
+                {errors.ownerName}
+              </div>
+            )}
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Flooring Material
-          </label>
-          <Input
-            name="flooringMaterial"
-            value={values.flooringMaterial}
-            onChange={handleChange}
-            disabled={loading}
-            className="text-sm"
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-1">Capacity</label>
-          <Input
-            name="capacityValue"
-            value={values.capacityValue}
-            onChange={handleChange}
-            disabled={loading}
-            className="text-sm"
-          />
-          {errors.capacityValue && (
-            <div className="text-red-500 text-xs mt-1">
-              {errors.capacityValue}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Mobile Number *
+              </label>
+              <Input
+                name="ownerMobileNumber"
+                value={values.ownerMobileNumber}
+                onChange={handleChange}
+                disabled={loading}
+                placeholder="9876543210"
+                maxLength="10"
+                className="text-sm"
+              />
+              {errors.ownerMobileNumber && (
+                <div className="text-red-500 text-xs mt-1">
+                  {errors.ownerMobileNumber}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className="w-full sm:w-32">
-          <label className="block text-sm font-medium mb-1">Unit</label>
-          <select
-            name="capacityUnit"
-            value={values.capacityUnit}
-            onChange={handleChange}
-            disabled={loading}
-            className="w-full rounded-md border border-border bg-background text-foreground px-3 py-2 text-sm"
-          >
-            {CAPACITY_UNITS.map((unit) => (
-              <option key={unit} value={unit}>
-                {unit}
-              </option>
-            ))}
-          </select>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Aadhaar Number *
+              </label>
+              <Input
+                name="ownerAadhaarNumber"
+                value={values.ownerAadhaarNumber}
+                onChange={handleChange}
+                disabled={loading}
+                placeholder="123456789012"
+                maxLength="12"
+                className="text-sm"
+              />
+              {errors.ownerAadhaarNumber && (
+                <div className="text-red-500 text-xs mt-1">
+                  {errors.ownerAadhaarNumber}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Owner Address *
+            </label>
+            <textarea
+              name="ownerAddress"
+              value={values.ownerAddress}
+              onChange={handleChange}
+              disabled={loading}
+              placeholder="Enter complete address"
+              rows="3"
+              className="w-full rounded-md border border-border bg-background text-foreground px-3 py-2 text-sm"
+            />
+            {errors.ownerAddress && (
+              <div className="text-red-500 text-xs mt-1">
+                {errors.ownerAddress}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* New fields for Challan & Compliance */}
+      {/* Vehicle Details Section */}
       <div className="border-t pt-4">
         <h4 className="font-medium mb-3 text-sm">
-          Challan & Compliance Details
+          Vehicle & Insurance Details
         </h4>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

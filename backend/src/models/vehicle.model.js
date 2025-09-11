@@ -27,55 +27,49 @@ const vehicleSchema = new mongoose.Schema(
       },
     },
 
-    lengthFeet: {
-      type: Number,
-      required: true,
-      enum: {
-        values: [14, 19, 20, 22, 24, 32, 40],
-        message: "Length must be one of: 14, 19, 20, 22, 24, 32, 40 feet",
-      },
-    },
-
-    flooringType: {
+    // Owner Details
+    ownerName: {
       type: String,
-      enum: {
-        values: ["YES", "NO"],
-        message: "Flooring type must be either YES or NO",
-      },
-      default: "YES",
-    },
-
-    capacityValue: {
-      type: Number,
       required: true,
-      min: 0,
+      trim: true,
     },
 
-    capacityUnit: {
+    ownerMobileNumber: {
       type: String,
-      enum: {
-        values: ["TON", "KG"],
-        message: "Capacity unit must be either TON or KG",
-      },
-      default: "TON",
+      required: true,
+      trim: true,
     },
 
-    // 🔹 Extra important fields (added for Challan & compliance)
+    ownerAadhaarNumber: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    ownerAddress: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     engineNumber: {
       type: String,
       trim: true,
       uppercase: true,
     },
+
     chassisNumber: {
       type: String,
       trim: true,
       uppercase: true,
     },
+
     insurancePolicyNo: {
       type: String,
       trim: true,
       uppercase: true,
     },
+
     insuranceValidity: {
       type: Date,
     },
@@ -102,9 +96,16 @@ const vehicleSchema = new mongoose.Schema(
 vehicleSchema.index({ vehicleNumber: 1 }, { unique: true });
 
 // Text index for search functionality
-vehicleSchema.index({ vehicleNumber: "text", vehicleType: "text" });
+vehicleSchema.index({
+  vehicleNumber: "text",
+  vehicleType: "text",
+  ownerName: "text",
+});
 
 // Compound index for status and isActive for efficient queries
 vehicleSchema.index({ status: 1, isActive: 1 });
+
+// Index for owner mobile number for quick lookups
+vehicleSchema.index({ ownerMobileNumber: 1 });
 
 export const Vehicle = mongoose.model("Vehicle", vehicleSchema);
