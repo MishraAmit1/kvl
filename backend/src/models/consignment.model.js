@@ -14,7 +14,6 @@ const consignmentSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
     consignor: {
       customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
       name: {
@@ -29,7 +28,6 @@ const consignmentSchema = new mongoose.Schema(
       },
       mobile: {
         type: String,
-        required: true,
         trim: true,
       },
       email: {
@@ -61,7 +59,6 @@ const consignmentSchema = new mongoose.Schema(
       },
       mobile: {
         type: String,
-        required: true,
         trim: true,
       },
       email: {

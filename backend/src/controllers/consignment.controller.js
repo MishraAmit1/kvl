@@ -66,24 +66,8 @@ const createConsignment = asyncHandler(async (req, res) => {
   }
 
   // ✅ ENHANCED VALIDATION
-  const phoneRegex = /^[6-9]\d{9}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-
-  // Validate phone numbers
-  if (!phoneRegex.test(consignor.mobile)) {
-    throw throwApiError(
-      400,
-      "Invalid consignor mobile number. Must be 10 digits starting with 6-9"
-    );
-  }
-
-  if (!phoneRegex.test(consignee.mobile)) {
-    throw throwApiError(
-      400,
-      "Invalid consignee mobile number. Must be 10 digits starting with 6-9"
-    );
-  }
 
   // Validate emails if provided
   if (consignor.email && !emailRegex.test(consignor.email)) {
