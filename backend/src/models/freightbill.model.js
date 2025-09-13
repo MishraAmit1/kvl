@@ -8,13 +8,6 @@ const freightBillSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       uppercase: true,
-      match: /^[A-Z]{2,4}[0-9]{4,8}$/,
-      validate: {
-        validator: function (v) {
-          return /^[A-Z]{2,4}[0-9]{4,6}$/.test(v);
-        },
-        message: "Bill number must be in format: FB2024001 or similar",
-      },
     },
     billDate: {
       type: Date,

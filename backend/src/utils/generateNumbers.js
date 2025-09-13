@@ -21,21 +21,26 @@ export const generateConsignmentNumber = async () => {
 };
 
 export const generateFreightBillNumber = async () => {
-  // Find the latest freight bill
-  const latestBill = await FreightBill.findOne()
+  const currentYear = new Date().getFullYear();
+  // Find the latest bill for the current year only
+  const latestBill = await FreightBill.findOne({
+    billNumber: { $regex: `^KVL${currentYear}` },
+  })
     .sort({ createdAt: -1 })
     .select("billNumber");
 
   let nextNumber = 1;
 
   if (latestBill && latestBill.billNumber) {
-    // Extract the number part
-    const match = latestBill.billNumber.match(/FB(\d+)/);
+    // Extract the 5-digit number after KVL<Year>
+    const match = latestBill.billNumber.match(
+      new RegExp(`^KVL${currentYear}(\\d{5})$`)
+    );
     if (match) {
       nextNumber = parseInt(match[1]) + 1;
     }
   }
 
-  // Format: FB + 4-digit number (e.g., FB0001)
-  return `FB${nextNumber.toString().padStart(4, "0")}`;
+  // Format: KVL + Year + 5-digit zero-padded number
+  return `KVL${currentYear}${nextNumber.toString().padStart(5, "0")}`;
 };
