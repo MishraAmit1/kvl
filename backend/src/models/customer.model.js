@@ -49,42 +49,16 @@ const customerSchema = new mongoose.Schema(
       type: String,
       trim: true,
       lowercase: true,
-      match: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      validate: {
-        validator: function (v) {
-          if (!v) return true; // Allow empty email
-          return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v);
-        },
-        message: "Please provide a valid email address",
-      },
     },
     gstNumber: {
       type: String,
       trim: true,
       uppercase: true,
-      match: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/,
-      validate: {
-        validator: function (v) {
-          if (!v) return true; // Allow empty GST
-          return /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(
-            v
-          );
-        },
-        message: "Please provide a valid GST number",
-      },
     },
     panNumber: {
       type: String,
       trim: true,
       uppercase: true,
-      match: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
-      validate: {
-        validator: function (v) {
-          if (!v) return true; // Allow empty PAN
-          return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(v);
-        },
-        message: "Please provide a valid PAN number",
-      },
     },
     customerType: {
       type: String,
@@ -100,14 +74,6 @@ const customerSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
-);
-
-// Compound unique indexes with proper sparse handling
-customerSchema.index({ mobile: 1 }, { unique: true });
-customerSchema.index({ email: 1 }, { unique: true, sparse: true });
-customerSchema.index(
-  { gstNumber: 1, panNumber: 1 },
-  { unique: true, sparse: true }
 );
 
 // Text index for search functionality

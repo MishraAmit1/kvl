@@ -56,6 +56,8 @@ router.post(
   "/:id/assign-driver",
   consignmentController.assignDriverToConsignment
 );
+// Add this route after other ID-specific routes
+router.post("/:id/payment-receipt", consignmentController.updatePaymentReceipt);
 
 // Generic ID routes (should be LAST)
 router

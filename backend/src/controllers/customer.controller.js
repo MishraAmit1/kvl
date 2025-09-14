@@ -157,35 +157,35 @@ const updateCustomer = asyncHandler(async (req, res) => {
   }
 
   // Check for unique constraints if mobile/email/gst is being updated
-  if (updateData.mobile && updateData.mobile !== customer.mobile) {
-    const existingCustomer = await Customer.findOne({
-      mobile: updateData.mobile,
-    });
-    if (existingCustomer) {
-      throw throwApiError(
-        400,
-        "Customer with this mobile number already exists"
-      );
-    }
-  }
+  // if (updateData.mobile && updateData.mobile !== customer.mobile) {
+  //   const existingCustomer = await Customer.findOne({
+  //     mobile: updateData.mobile,
+  //   });
+  //   if (existingCustomer) {
+  //     throw throwApiError(
+  //       400,
+  //       "Customer with this mobile number already exists"
+  //     );
+  //   }
+  // }
 
-  if (updateData.email && updateData.email !== customer.email) {
-    const existingCustomer = await Customer.findOne({
-      email: updateData.email,
-    });
-    if (existingCustomer) {
-      throw throwApiError(400, "Customer with this email already exists");
-    }
-  }
+  // if (updateData.email && updateData.email !== customer.email) {
+  //   const existingCustomer = await Customer.findOne({
+  //     email: updateData.email,
+  //   });
+  //   if (existingCustomer) {
+  //     throw throwApiError(400, "Customer with this email already exists");
+  //   }
+  // }
 
-  if (updateData.gstNumber && updateData.gstNumber !== customer.gstNumber) {
-    const existingCustomer = await Customer.findOne({
-      gstNumber: updateData.gstNumber,
-    });
-    if (existingCustomer) {
-      throw throwApiError(400, "Customer with this GST number already exists");
-    }
-  }
+  // if (updateData.gstNumber && updateData.gstNumber !== customer.gstNumber) {
+  //   const existingCustomer = await Customer.findOne({
+  //     gstNumber: updateData.gstNumber,
+  //   });
+  //   if (existingCustomer) {
+  //     throw throwApiError(400, "Customer with this GST number already exists");
+  //   }
+  // }
 
   const updatedCustomer = await Customer.findByIdAndUpdate(id, updateData, {
     new: true,

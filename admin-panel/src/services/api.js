@@ -1,6 +1,7 @@
 class ApiService {
   constructor() {
-    this.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+    this.baseURL =
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
     this.isRefreshing = false;
     this.failedQueue = [];
   }
@@ -220,7 +221,12 @@ class ApiService {
       method: "DELETE",
     });
   }
-
+  async updatePaymentReceipt(id, data) {
+    return this.request(`/consignments/${id}/payment-receipt`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
   async getConsignmentStatistics(params = {}) {
     const queryString = new URLSearchParams(params).toString();
     return this.request(`/consignments/statistics?${queryString}`);

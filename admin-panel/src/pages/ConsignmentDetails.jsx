@@ -169,8 +169,8 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
 
     useEffect(() => {
       Promise.all([
-        ApiService.getVehicles({ status: "AVAILABLE" }),
-        ApiService.getDrivers({ status: "AVAILABLE" }),
+        ApiService.getVehicles({ limit: 1000 }), // Remove status filter
+        ApiService.getDrivers({ limit: 1000 }),
       ])
         .then(([vehiclesRes, driversRes]) => {
           setVehicles(vehiclesRes.data?.vehicles || []);
@@ -231,9 +231,16 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
                   {vehicles.map((v) => (
                     <option key={v._id} value={v._id}>
                       {v.vehicleNumber} - {v.vehicleType}
+                      {v.status !== "AVAILABLE" && ` (${v.status})`}
                     </option>
                   ))}
                 </select>
+                {vehicle && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {vehicles.find((v) => v._id === vehicle)?.status ===
+                      "ON_TRIP" && "⚠️ This vehicle is already on trip"}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -248,8 +255,15 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
                   {drivers.map((d) => (
                     <option key={d._id} value={d._id}>
                       {d.name} - {d.mobile}
+                      {d.status !== "AVAILABLE"}
                     </option>
                   ))}
+                  {/* {driver && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {drivers.find((d) => d._id === driver)?.status ===
+                        "ON_TRIP" && "⚠️ This driver is already on trip"}
+                    </div>
+                  )} */}
                 </select>
               </div>
 
@@ -455,6 +469,7 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
   };
 
   // ✅ NEW: In Transit Modal with Actual Pickup Details
+  // ✅ NEW: In Transit Modal with OPTIONAL Actual Pickup Details
   const InTransitModal = () => {
     const [actualPickupDate, setActualPickupDate] = useState("");
     const [actualPickupTime, setActualPickupTime] = useState("");
@@ -464,12 +479,19 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
       e.preventDefault();
       setActionLoading(true);
       try {
-        await ApiService.updateConsignmentStatus(consignmentId, {
+        // Build the data object
+        const updateData = {
           status: "IN_TRANSIT",
-          actualPickupDate: `${actualPickupDate}T${actualPickupTime}:00`,
-          actualPickupTime,
           transitNotes,
-        });
+        };
+
+        // Only add pickup details if both date and time are provided
+        if (actualPickupDate && actualPickupTime) {
+          updateData.actualPickupDate = `${actualPickupDate}T${actualPickupTime}:00`;
+          updateData.actualPickupTime = actualPickupTime;
+        }
+
+        await ApiService.updateConsignmentStatus(consignmentId, updateData);
         toast.success("Consignment marked as In Transit!");
         setActionModal(null);
         reload();
@@ -511,30 +533,46 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block font-medium mb-2">
-                Actual Pickup Date *
+                Actual Pickup Date (Optional)
               </label>
               <Input
                 type="date"
                 value={actualPickupDate}
                 onChange={(e) => setActualPickupDate(e.target.value)}
-                required
+                // Remove required attribute
               />
+              <div className="text-xs text-muted-foreground mt-1">
+                Leave empty to use scheduled date or update later
+              </div>
             </div>
 
             <div>
               <label className="block font-medium mb-2">
-                Actual Pickup Time *
+                Actual Pickup Time (Optional)
               </label>
               <Input
                 type="time"
                 value={actualPickupTime}
                 onChange={(e) => setActualPickupTime(e.target.value)}
-                required
+                // Remove required attribute
               />
+              <div className="text-xs text-muted-foreground mt-1">
+                Leave empty to use scheduled time or update later
+              </div>
             </div>
 
+            {/* Show warning if only one field is filled */}
+            {((actualPickupDate && !actualPickupTime) ||
+              (!actualPickupDate && actualPickupTime)) && (
+              <div className="text-xs text-yellow-600 bg-yellow-50 p-2 rounded">
+                ⚠️ Please provide both date and time, or leave both empty
+              </div>
+            )}
+
             <div>
-              <label className="block font-medium mb-2">Transit Notes</label>
+              <label className="block font-medium mb-2">
+                Transit Notes (Optional)
+              </label>
               <textarea
                 value={transitNotes}
                 onChange={(e) => setTransitNotes(e.target.value)}
@@ -552,7 +590,15 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={actionLoading}>
+              <Button
+                type="submit"
+                disabled={
+                  actionLoading ||
+                  // Disable if only one field is filled
+                  (actualPickupDate && !actualPickupTime) ||
+                  (!actualPickupDate && actualPickupTime)
+                }
+              >
                 {actionLoading ? "Updating..." : "Mark In Transit"}
               </Button>
             </div>

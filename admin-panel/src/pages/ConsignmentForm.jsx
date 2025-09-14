@@ -361,7 +361,21 @@ const ConsignmentForm = ({
           </div>
         </div>
       )}
-
+      {mode === "edit" && (
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Consignment Number *
+          </label>
+          <Input
+            name="consignmentNumber"
+            value={values.consignmentNumber}
+            onChange={handleChange}
+            disabled={loading}
+            placeholder="Enter consignment number"
+            className="text-sm"
+          />
+        </div>
+      )}
       {/* Step 2: Details */}
       {step === 1 && (
         <div className="space-y-3 sm:space-y-4">
@@ -841,13 +855,11 @@ const ConsignmentForm = ({
               className="w-full rounded-md border border-border bg-background text-foreground px-3 py-2 text-sm"
             >
               <option value="">Select vehicle (optional)</option>
-              {vehicles
-                .filter((v) => v.status === "AVAILABLE")
-                .map((v) => (
-                  <option key={v._id} value={v._id}>
-                    {v.vehicleNumber} - {v.vehicleType}
-                  </option>
-                ))}
+              {vehicles.map((v) => (
+                <option key={v._id} value={v._id}>
+                  {v.vehicleNumber} - {v.vehicleType}
+                </option>
+              ))}
             </select>
             {values.vehicle && (
               <div className="mt-2 p-2 bg-muted rounded text-xs">
@@ -913,13 +925,11 @@ const ConsignmentForm = ({
               className="w-full rounded-md border border-border bg-background text-foreground px-3 py-2 text-sm"
             >
               <option value="">Select driver (optional)</option>
-              {drivers
-                .filter((d) => d.status === "AVAILABLE")
-                .map((d) => (
-                  <option key={d._id} value={d._id}>
-                    {d.name} - {d.mobile}
-                  </option>
-                ))}
+              {drivers.map((d) => (
+                <option key={d._id} value={d._id}>
+                  {d.name} - {d.mobile}
+                </option>
+              ))}
             </select>
             {values.driver && (
               <div className="mt-2 p-2 bg-muted rounded text-xs">

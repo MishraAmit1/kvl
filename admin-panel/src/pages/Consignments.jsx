@@ -17,7 +17,9 @@ import {
   Pencil, // Instead of PencilIcon
   Trash2, // Instead of TrashIcon
   BarChart3, // Instead of ChartBarIcon
+  Receipt,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 const PAGE_SIZE = 10;
 const STATUS_OPTIONS = [
   "BOOKED",
@@ -40,7 +42,8 @@ const STATUS_COLORS = {
 };
 
 const fetchConsignments = async ({ queryKey }) => {
-  const [_, { page, search, status, fromDate, toDate }] = queryKey;
+  const [_, { page, search, status, fromDate, toDate, paymentFilter }] =
+    queryKey;
 
   const params = {
     page: page.toString(),
@@ -51,6 +54,13 @@ const fetchConsignments = async ({ queryKey }) => {
   if (status) params.status = status;
   if (fromDate) params.fromDate = fromDate;
   if (toDate) params.toDate = toDate;
+
+  // FIXED: Send string values properly
+  if (paymentFilter === "PAID") {
+    params.paymentReceiptStatus = "true";
+  } else if (paymentFilter === "UNPAID") {
+    params.paymentReceiptStatus = "false";
+  }
 
   const res = await ApiService.getConsignments(params);
   return res.data;
@@ -81,8 +91,9 @@ const Consignments = () => {
   const [detailsId, setDetailsId] = useState(null);
   const [showStats, setShowStats] = useState(false);
   const [stats, setStats] = useState(null);
-
-  // Fetch resources for form dropdowns
+  const [paymentReceiptModal, setPaymentReceiptModal] = useState(null);
+  const [paymentDate, setPaymentDate] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState("");
   const [customers, setCustomers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [drivers, setDrivers] = useState([]);
@@ -133,14 +144,21 @@ const Consignments = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [search, status, fromDate, toDate]);
+  }, [search, status, fromDate, toDate, paymentFilter]);
 
   const debouncedSearch = useDebounce(search);
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: [
       "consignments",
-      { page, search: debouncedSearch, status, fromDate, toDate },
+      {
+        page,
+        search: debouncedSearch,
+        status,
+        fromDate,
+        toDate,
+        paymentFilter,
+      },
     ],
     queryFn: fetchConsignments,
     keepPreviousData: true,
@@ -201,6 +219,19 @@ const Consignments = () => {
     }
   };
 
+  const handlePaymentReceipt = async (consignment) => {
+    try {
+      await ApiService.updatePaymentReceipt(consignment._id, {
+        paymentReceiptDate: paymentDate || null,
+      });
+      toast.success("Payment receipt updated successfully!");
+      setPaymentReceiptModal(null);
+      setPaymentDate("");
+      refetch();
+    } catch (err) {
+      toast.error(err?.message || "Failed to update payment receipt");
+    }
+  };
   const handleDownloadPDF = async (consignment) => {
     try {
       const response = await fetch(
@@ -406,6 +437,35 @@ const Consignments = () => {
             {c.status.replace("_", " ")}
           </span>
         </td>
+        {/* NEW PAYMENT COLUMN */}
+        {/* PAYMENT COLUMN WITH DATE */}
+        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm">
+          {c.paymentReceiptStatus ? (
+            <div className="space-y-1">
+              <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                ✓ Done
+              </span>
+              {c.paymentReceiptDate && (
+                <div className="text-[10px] text-muted-foreground">
+                  {new Date(c.paymentReceiptDate).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "2-digit",
+                  })}{" "}
+                  {new Date(c.paymentReceiptDate).toLocaleTimeString("en-IN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+              Pending
+            </span>
+          )}
+        </td>
         <td className="px-2 sm:px-4 py-2">
           <div className="flex gap-1">
             <Button
@@ -432,7 +492,11 @@ const Consignments = () => {
               variant="ghost"
               onClick={() => handleEdit(c)}
               title="Edit"
-              disabled={formLoading || c.status === "DELIVERED"}
+              disabled={
+                formLoading ||
+                c.status === "DELIVERED" ||
+                c.paymentReceiptStatus
+              }
               className="h-8 w-8"
             >
               <Pencil className="h-4 w-4 text-primary" />
@@ -449,9 +513,30 @@ const Consignments = () => {
             <Button
               size="icon"
               variant="ghost"
+              onClick={() => {
+                setPaymentReceiptModal(c);
+                setPaymentDate("");
+              }}
+              title="Pay Receipt"
+              disabled={c.paymentReceiptStatus}
+              className="h-8 w-8"
+            >
+              <Receipt
+                className={`h-4 w-4 ${
+                  c.paymentReceiptStatus ? "text-gray-400" : "text-primary"
+                }`}
+              />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
               onClick={() => handleDelete(c)}
               title="Delete"
-              disabled={formLoading || c.status === "DELIVERED"}
+              disabled={
+                formLoading ||
+                c.status === "DELIVERED" ||
+                c.paymentReceiptStatus
+              }
               className="h-8 w-8 hidden lg:inline-flex"
             >
               <Trash2 className="h-4 w-4 text-destructive" />
@@ -461,7 +546,6 @@ const Consignments = () => {
       </tr>
     ));
   }, [data?.consignments, formLoading]);
-
   return (
     <div className="p-3 sm:p-4 md:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
@@ -537,6 +621,15 @@ const Consignments = () => {
               </option>
             ))}
           </select>
+          <select
+            value={paymentFilter}
+            onChange={(e) => setPaymentFilter(e.target.value)}
+            className="rounded-md border border-border bg-background text-foreground px-3 py-2 text-sm"
+          >
+            <option value="">All Payments</option>
+            <option value="PAID">Payment Done</option>
+            <option value="UNPAID">Payment Pending</option>
+          </select>
           <input
             type="date"
             value={fromDate}
@@ -559,6 +652,7 @@ const Consignments = () => {
               setToDate("");
               setSearch("");
               setStatus("");
+              setPaymentFilter("");
             }}
             className="text-sm"
           >
@@ -589,6 +683,9 @@ const Consignments = () => {
                 </th>
                 <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden xl:table-cell">
                   Status
+                </th>
+                <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
+                  Payment
                 </th>
                 <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
                   Actions
@@ -671,6 +768,57 @@ const Consignments = () => {
                 fetchStatistics();
               }}
             />
+          </div>
+        </div>
+      )}
+      {/* Details Modal ke baad yeh add karo */}
+      {paymentReceiptModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="bg-card rounded-lg shadow-xl p-6 w-full max-w-md border border-border">
+            <h2 className="text-lg font-semibold mb-4">Payment Receipt</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Consignment Number
+                </label>
+                <Input
+                  value={paymentReceiptModal.consignmentNumber}
+                  disabled
+                  className="text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Payment Date (Optional)
+                </label>
+                <Input
+                  type="datetime-local"
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                  className="text-sm"
+                  placeholder="Leave empty for current date"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Leave empty to use current date and time
+                </p>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setPaymentReceiptModal(null);
+                    setPaymentDate("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => handlePaymentReceipt(paymentReceiptModal)}
+                >
+                  Update Receipt
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}

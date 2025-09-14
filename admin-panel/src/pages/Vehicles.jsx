@@ -210,7 +210,7 @@ const VehiclesPage = () => {
                   Mobile Number
                 </th>
                 <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden xl:table-cell">
-                  Aadhaar Number
+                  PanCard Number
                 </th>
                 <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase hidden 2xl:table-cell">
                   Address

@@ -2,22 +2,22 @@ import { Consignment } from "../models/consignment.model.js";
 import { FreightBill } from "../models/freightbill.model.js";
 
 export const generateConsignmentNumber = async () => {
-  const year = new Date().getFullYear();
-
-  // Find the last consignment number for current year
+  // Find the last consignment number that starts with KVL-
   const lastConsignment = await Consignment.findOne({
-    consignmentNumber: { $regex: `^KVL-${year}-` },
+    consignmentNumber: { $regex: "^KVL-" },
   }).sort({ consignmentNumber: -1 });
 
-  let nextNumber = 1;
+  let nextNumber = 796; // Starting number
+
   if (lastConsignment) {
-    const lastNumber = parseInt(
-      lastConsignment.consignmentNumber.split("-")[2]
-    );
-    nextNumber = lastNumber + 1;
+    // Extract the number part after KVL-
+    const match = lastConsignment.consignmentNumber.match(/^KVL-(\d+)$/);
+    if (match) {
+      nextNumber = parseInt(match[1]) + 1;
+    }
   }
 
-  return `KVL-${year}-${nextNumber.toString().padStart(6, "0")}`;
+  return `KVL-${nextNumber}`;
 };
 
 export const generateFreightBillNumber = async () => {

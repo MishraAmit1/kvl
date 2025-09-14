@@ -159,17 +159,19 @@ const createConsignment = asyncHandler(async (req, res) => {
 
   // If vehicle and driver are provided, assign them and update status
   if (req.body.vehicle && req.body.driver) {
-    console.log("Vehicle and driver provided:", {
-      vehicle: req.body.vehicle,
-      driver: req.body.driver,
-    });
-
-    // Get vehicle and driver details
     const vehicle = await Vehicle.findById(req.body.vehicle);
     const driver = await Driver.findById(req.body.driver);
+    // console.log("Vehicle and driver provided:", {
+    //   vehicle: req.body.vehicle,
+    //   driver: req.body.driver,
+    // });
 
-    console.log("Found vehicle:", vehicle);
-    console.log("Found driver:", driver);
+    // // Get vehicle and driver details
+    // const vehicle = await Vehicle.findById(req.body.vehicle);
+    // const driver = await Driver.findById(req.body.driver);
+
+    // console.log("Found vehicle:", vehicle);
+    // console.log("Found driver:", driver);
 
     if (vehicle && driver) {
       consignmentData.vehicle = {
@@ -184,11 +186,11 @@ const createConsignment = asyncHandler(async (req, res) => {
       console.log("Updated consignment data:", consignmentData);
 
       // Update vehicle and driver status
-      vehicle.status = "ON_TRIP";
-      driver.status = "ON_TRIP";
-      driver.currentVehicle = vehicle._id;
+      // vehicle.status = "ON_TRIP";
+      // driver.status = "ON_TRIP";
+      // driver.currentVehicle = vehicle._id;
 
-      await Promise.all([vehicle.save(), driver.save()]);
+      // await Promise.all([vehicle.save(), driver.save()]);
     } else {
       console.log("Vehicle or driver not found");
     }
@@ -221,6 +223,7 @@ const createConsignment = asyncHandler(async (req, res) => {
 });
 
 // Get all consignments with pagination and filters
+// Get all consignments with pagination and filters
 const getAllConsignments = asyncHandler(async (req, res) => {
   const {
     page = 1,
@@ -234,22 +237,11 @@ const getAllConsignments = asyncHandler(async (req, res) => {
     gstPayableBy,
     risk,
     toPay,
+    paymentReceiptStatus,
   } = req.query;
 
-  console.log("=== GET ALL CONSIGNMENTS DEBUG ===");
-  console.log("Query params:", {
-    page,
-    limit,
-    search,
-    status,
-    fromDate,
-    toDate,
-    fromCity,
-    toCity,
-    gstPayableBy,
-    risk,
-    toPay,
-  });
+  console.log("=== PAYMENT FILTER DEBUG ===");
+  console.log("paymentReceiptStatus param:", paymentReceiptStatus);
 
   const query = { isDeleted: false };
 
@@ -277,7 +269,22 @@ const getAllConsignments = asyncHandler(async (req, res) => {
     query.status = status;
   }
 
-  // Add new filters
+  // FIXED Payment Receipt Filter
+  if (paymentReceiptStatus === "true") {
+    // Payment Done - only those with paymentReceiptStatus = true
+    query.paymentReceiptStatus = true;
+  } else if (paymentReceiptStatus === "false") {
+    // Payment Pending - those with false OR field doesn't exist
+    query.$or = [
+      { paymentReceiptStatus: false },
+      { paymentReceiptStatus: { $exists: false } },
+      { paymentReceiptStatus: null },
+    ];
+  }
+
+  console.log("Payment filter query:", JSON.stringify(query, null, 2));
+
+  // Add other filters
   if (gstPayableBy) {
     query.gstPayableBy = gstPayableBy;
   }
@@ -309,8 +316,6 @@ const getAllConsignments = asyncHandler(async (req, res) => {
     query.toCity = { $regex: toCity, $options: "i" };
   }
 
-  console.log("Final query:", JSON.stringify(query, null, 2));
-
   const skip = (page - 1) * limit;
 
   const consignments = await Consignment.find(query)
@@ -325,20 +330,7 @@ const getAllConsignments = asyncHandler(async (req, res) => {
 
   console.log("Found consignments:", consignments.length);
   console.log("Total count:", total);
-  console.log(
-    "First consignment:",
-    consignments[0]
-      ? {
-          _id: consignments[0]._id,
-          consignmentNumber: consignments[0].consignmentNumber,
-          status: consignments[0].status,
-          gstPayableBy: consignments[0].gstPayableBy,
-          risk: consignments[0].risk,
-          toPay: consignments[0].toPay,
-        }
-      : "No consignments found"
-  );
-  console.log("=== END DEBUG ===");
+  console.log("=== END PAYMENT FILTER DEBUG ===");
 
   return sendResponse(
     res,
@@ -398,49 +390,46 @@ const updateConsignment = asyncHandler(async (req, res) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
-  // Validate consignor updates
-  if (updateData.consignor) {
-    if (
-      updateData.consignor.mobile &&
-      !phoneRegex.test(updateData.consignor.mobile)
-    ) {
-      throw throwApiError(400, "Invalid consignor mobile number");
-    }
-    if (
-      updateData.consignor.email &&
-      !emailRegex.test(updateData.consignor.email)
-    ) {
-      throw throwApiError(400, "Invalid consignor email");
-    }
-    if (
-      updateData.consignor.gstNumber &&
-      !gstRegex.test(updateData.consignor.gstNumber)
-    ) {
-      throw throwApiError(400, "Invalid consignor GST number");
-    }
-  }
+  // // Validate consignor updates
+  // if (updateData.consignor) {
+  //   if (
+  //     updateData.consignor.mobile &&
+  //     !phoneRegex.test(updateData.consignor.mobile)
+  //   ) {
+  //     throw throwApiError(400, "Invalid consignor mobile number");
+  //   }
+  //   if (
+  //     updateData.consignor.email &&
+  //     !emailRegex.test(updateData.consignor.email)
+  //   ) {
+  //     throw throwApiError(400, "Invalid consignor email");
+  //   }
+  //   if (
+  //     updateData.consignor.gstNumber &&
+  //     !gstRegex.test(updateData.consignor.gstNumber)
+  //   ) {
+  //     throw throwApiError(400, "Invalid consignor GST number");
+  //   }
+  // }
 
-  // Validate consignee updates
-  if (updateData.consignee) {
-    if (
-      updateData.consignee.mobile &&
-      !phoneRegex.test(updateData.consignee.mobile)
-    ) {
-      throw throwApiError(400, "Invalid consignee mobile number");
-    }
-    if (
-      updateData.consignee.email &&
-      !emailRegex.test(updateData.consignee.email)
-    ) {
-      throw throwApiError(400, "Invalid consignee email");
-    }
-    if (
-      updateData.consignee.gstNumber &&
-      !gstRegex.test(updateData.consignee.gstNumber)
-    ) {
-      throw throwApiError(400, "Invalid consignee GST number");
-    }
-  }
+  // // Validate consignee updates
+  // if (updateData.consignee) {
+  //   if (updateData.consignee.mobile) {
+  //     throw throwApiError(400, "Invalid consignee mobile number");
+  //   }
+  //   if (
+  //     updateData.consignee.email &&
+  //     !emailRegex.test(updateData.consignee.email)
+  //   ) {
+  //     throw throwApiError(400, "Invalid consignee email");
+  //   }
+  //   if (
+  //     updateData.consignee.gstNumber &&
+  //     !gstRegex.test(updateData.consignee.gstNumber)
+  //   ) {
+  //     throw throwApiError(400, "Invalid consignee GST number");
+  //   }
+  // }
 
   // Validate weight logic if updating
   if (updateData.chargedWeight && updateData.actualWeight) {
@@ -706,6 +695,7 @@ const getConsignmentsByDateRange = asyncHandler(async (req, res) => {
 });
 
 // Update consignment status
+// Update consignment status
 const updateConsignmentStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const {
@@ -732,8 +722,7 @@ const updateConsignmentStatus = asyncHandler(async (req, res) => {
 
   const consignment = await Consignment.findOne({ _id: id, isDeleted: false });
   if (!consignment) {
-    const error = throwApiError(404, "Consignment not found");
-    throw error;
+    throw throwApiError(404, "Consignment not found");
   }
 
   const statusFlow = {
@@ -741,9 +730,9 @@ const updateConsignmentStatus = asyncHandler(async (req, res) => {
     ASSIGNED: ["SCHEDULED", "CANCELLED"],
     SCHEDULED: ["IN_TRANSIT", "CANCELLED"],
     IN_TRANSIT: ["DELIVERED_UNCONFIRMED", "DELIVERED", "CANCELLED"],
-    DELIVERED_UNCONFIRMED: ["DELIVERED", "IN_TRANSIT"], // Can go back to transit if issue
-    DELIVERED: [], // Final status
-    CANCELLED: ["BOOKED"], // Can be rebooked
+    DELIVERED_UNCONFIRMED: ["DELIVERED", "IN_TRANSIT"],
+    DELIVERED: [],
+    CANCELLED: ["BOOKED"],
   };
 
   if (!statusFlow[consignment.status].includes(status)) {
@@ -753,32 +742,144 @@ const updateConsignmentStatus = asyncHandler(async (req, res) => {
     );
   }
 
-  // ✅ SPECIAL HANDLING FOR DELIVERED_UNCONFIRMED
+  // Previous status for checking
+  const previousStatus = consignment.status;
+
+  // Update status
+  consignment.status = status;
+  consignment.updatedBy = req.user?._id || null;
+
+  // Handle DELIVERED_UNCONFIRMED
   if (status === "DELIVERED_UNCONFIRMED") {
     consignment.deliveryDate = new Date();
     consignment.deliveryTime = new Date().toLocaleTimeString();
-    // Wait for proof of delivery
   }
 
-  // ✅ DELIVERED REQUIRES PROOF OF DELIVERY
-  if (
-    status === "DELIVERED" &&
-    consignment.status === "DELIVERED_UNCONFIRMED"
-  ) {
-    if (!proofOfDelivery) {
+  // Handle DELIVERED status
+  if (status === "DELIVERED") {
+    // Only update delivery date if not already set
+    if (!consignment.deliveryDate) {
+      consignment.deliveryDate = new Date();
+      consignment.deliveryTime = new Date().toLocaleTimeString();
+    }
+
+    // If coming from DELIVERED_UNCONFIRMED, require POD
+    if (previousStatus === "DELIVERED_UNCONFIRMED" && !proofOfDelivery) {
       throw throwApiError(
         400,
         "Proof of delivery is required to confirm delivery"
       );
     }
-    consignment.proofOfDelivery = proofOfDelivery;
+
+    if (proofOfDelivery) {
+      consignment.proofOfDelivery = proofOfDelivery;
+    }
+
+    // ✅ FREE UP VEHICLE AND DRIVER WHEN DELIVERED
+    if (consignment.vehicle?.vehicleId) {
+      // Check if this vehicle has other active consignments
+      const activeConsignments = await Consignment.find({
+        "vehicle.vehicleId": consignment.vehicle.vehicleId,
+        _id: { $ne: consignment._id },
+        status: {
+          $in: ["ASSIGNED", "SCHEDULED", "IN_TRANSIT", "DELIVERED_UNCONFIRMED"],
+        },
+        isDeleted: false,
+      });
+
+      // Only free vehicle if no other active consignments
+      if (activeConsignments.length === 0) {
+        await Vehicle.findByIdAndUpdate(consignment.vehicle.vehicleId, {
+          status: "AVAILABLE",
+        });
+      }
+    }
+
+    if (consignment.vehicle?.driverId) {
+      // Check if this driver has other active consignments
+      const activeConsignments = await Consignment.find({
+        "vehicle.driverId": consignment.vehicle.driverId,
+        _id: { $ne: consignment._id },
+        status: {
+          $in: ["ASSIGNED", "SCHEDULED", "IN_TRANSIT", "DELIVERED_UNCONFIRMED"],
+        },
+        isDeleted: false,
+      });
+
+      // Only free driver if no other active consignments
+      if (activeConsignments.length === 0) {
+        await Driver.findByIdAndUpdate(consignment.vehicle.driverId, {
+          status: "AVAILABLE",
+          currentVehicle: null,
+        });
+      }
+    }
+
+    // Send notification email
+    if (consignment.consignor.email) {
+      try {
+        const smsMessage = `Dear ${
+          consignment.consignor.name
+        }, Your consignment ${
+          consignment.consignmentNumber
+        } is successfully delivered. Delivered To: ${
+          consignment.consignee.name
+        }, Time: ${consignment.deliveryDate.toLocaleDateString()}, ${
+          consignment.deliveryTime
+        }. Thank you for choosing KVL Logistics!`;
+
+        await sendEmail(
+          consignment.consignor.email,
+          "Consignment Delivered",
+          smsMessage
+        );
+      } catch (e) {
+        console.warn("Email send failed (ignored):", e.message);
+      }
+    }
   }
 
-  consignment.status = status;
-  consignment.updatedBy = req.user?._id || null;
+  // ✅ ALSO FREE UP WHEN CANCELLED
+  if (status === "CANCELLED") {
+    if (consignment.vehicle?.vehicleId) {
+      const activeConsignments = await Consignment.find({
+        "vehicle.vehicleId": consignment.vehicle.vehicleId,
+        _id: { $ne: consignment._id },
+        status: {
+          $in: ["ASSIGNED", "SCHEDULED", "IN_TRANSIT", "DELIVERED_UNCONFIRMED"],
+        },
+        isDeleted: false,
+      });
 
-  // Handle IN_TRANSIT status with actual pickup details
+      if (activeConsignments.length === 0) {
+        await Vehicle.findByIdAndUpdate(consignment.vehicle.vehicleId, {
+          status: "AVAILABLE",
+        });
+      }
+    }
+
+    if (consignment.vehicle?.driverId) {
+      const activeConsignments = await Consignment.find({
+        "vehicle.driverId": consignment.vehicle.driverId,
+        _id: { $ne: consignment._id },
+        status: {
+          $in: ["ASSIGNED", "SCHEDULED", "IN_TRANSIT", "DELIVERED_UNCONFIRMED"],
+        },
+        isDeleted: false,
+      });
+
+      if (activeConsignments.length === 0) {
+        await Driver.findByIdAndUpdate(consignment.vehicle.driverId, {
+          status: "AVAILABLE",
+          currentVehicle: null,
+        });
+      }
+    }
+  }
+
+  // Handle IN_TRANSIT status
   if (status === "IN_TRANSIT") {
+    // Only update if both date and time are provided
     if (actualPickupDate && actualPickupTime) {
       // Parse the actual pickup date
       let parsedActualPickupDate;
@@ -791,52 +892,103 @@ const updateConsignmentStatus = asyncHandler(async (req, res) => {
 
       consignment.actualPickupDate = parsedActualPickupDate;
       consignment.actualPickupTime = actualPickupTime;
-      consignment.transitNotes = transitNotes;
+    }
 
-      console.log("Actual pickup details:", {
-        date: parsedActualPickupDate,
-        time: actualPickupTime,
-        notes: transitNotes,
+    // Transit notes are always optional
+    if (transitNotes) {
+      consignment.transitNotes = transitNotes;
+    }
+
+    // Mark vehicle/driver as ON_TRIP
+    if (consignment.vehicle?.vehicleId) {
+      await Vehicle.findByIdAndUpdate(consignment.vehicle.vehicleId, {
+        status: "ON_TRIP",
       });
     }
-  }
-
-  // Update delivery details if status is DELIVERED
-  if (status === "DELIVERED") {
-    // Only update delivery date if not already set (from DELIVERED_UNCONFIRMED)
-    if (!consignment.deliveryDate) {
-      consignment.deliveryDate = new Date();
-      consignment.deliveryTime = new Date().toLocaleTimeString();
+    if (consignment.vehicle?.driverId) {
+      await Driver.findByIdAndUpdate(consignment.vehicle.driverId, {
+        status: "ON_TRIP",
+        currentVehicle: consignment.vehicle.vehicleId,
+      });
     }
 
-    // Send SMS to consignor
-    const smsMessage = `Dear ${consignment.consignor.name}, Your consignment ${
-      consignment.consignmentNumber
-    } is successfully delivered. Delivered To: ${
-      consignment.consignee.name
-    }, Time: ${consignment.deliveryDate.toLocaleDateString()}, ${
-      consignment.deliveryTime
-    }. Thank you for choosing KVL Logistics!`;
-    // await sendSMS(consignment.consignor.mobile, smsMessage);
-
-    if (consignment.consignor.email) {
-      try {
-        await sendEmail(
-          consignment.consignor.email,
-          "Consignment Delivered",
-          smsMessage
-        );
-      } catch (e) {
-        console.warn("Email send failed (ignored):", e.message);
-      }
-    }
+    console.log("In Transit update:", {
+      hasActualPickup: !!(actualPickupDate && actualPickupTime),
+      date: consignment.actualPickupDate,
+      time: consignment.actualPickupTime,
+      notes: transitNotes,
+    });
   }
 
   await consignment.save();
 
   return sendResponse(res, 200, consignment, "Status updated successfully");
 });
+// Add this new function
+const updatePaymentReceipt = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { paymentReceiptDate } = req.body;
 
+  const consignment = await Consignment.findOne({ _id: id, isDeleted: false });
+  if (!consignment) {
+    throw throwApiError(404, "Consignment not found");
+  }
+
+  const receiptDate = paymentReceiptDate
+    ? new Date(paymentReceiptDate)
+    : new Date();
+
+  consignment.paymentReceiptDate = receiptDate;
+  consignment.paymentReceiptStatus = true;
+  consignment.updatedBy = req.user?._id || null;
+
+  // ✅ If payment done and delivered, ensure vehicle/driver are freed
+  if (consignment.status === "DELIVERED") {
+    if (consignment.vehicle?.vehicleId) {
+      const activeConsignments = await Consignment.find({
+        "vehicle.vehicleId": consignment.vehicle.vehicleId,
+        _id: { $ne: consignment._id },
+        status: {
+          $in: ["ASSIGNED", "SCHEDULED", "IN_TRANSIT", "DELIVERED_UNCONFIRMED"],
+        },
+        isDeleted: false,
+      });
+
+      if (activeConsignments.length === 0) {
+        await Vehicle.findByIdAndUpdate(consignment.vehicle.vehicleId, {
+          status: "AVAILABLE",
+        });
+      }
+    }
+
+    if (consignment.vehicle?.driverId) {
+      const activeConsignments = await Consignment.find({
+        "vehicle.driverId": consignment.vehicle.driverId,
+        _id: { $ne: consignment._id },
+        status: {
+          $in: ["ASSIGNED", "SCHEDULED", "IN_TRANSIT", "DELIVERED_UNCONFIRMED"],
+        },
+        isDeleted: false,
+      });
+
+      if (activeConsignments.length === 0) {
+        await Driver.findByIdAndUpdate(consignment.vehicle.driverId, {
+          status: "AVAILABLE",
+          currentVehicle: null,
+        });
+      }
+    }
+  }
+
+  await consignment.save();
+
+  return sendResponse(
+    res,
+    200,
+    consignment,
+    "Payment receipt updated successfully"
+  );
+});
 // Assign vehicle to consignment
 const assignVehicleToConsignment = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -862,14 +1014,15 @@ const assignVehicleToConsignment = asyncHandler(async (req, res) => {
 
   // Check vehicle availability
   const vehicle = await Vehicle.findById(vehicleId);
-  if (!vehicle || vehicle.status !== "AVAILABLE") {
-    throw throwApiError(400, "Vehicle is not available");
+  const driver = await Driver.findById(driverId);
+
+  // Remove availability check - allow assigning busy vehicles/drivers
+  if (!vehicle) {
+    throw throwApiError(400, "Vehicle not found");
   }
 
-  // Check driver availability
-  const driver = await Driver.findById(driverId);
-  if (!driver || driver.status !== "AVAILABLE") {
-    throw throwApiError(400, "Driver is not available");
+  if (!driver) {
+    throw throwApiError(400, "Driver not found");
   }
 
   // Update consignment
@@ -889,9 +1042,9 @@ const assignVehicleToConsignment = asyncHandler(async (req, res) => {
   consignment.updatedBy = req.user?._id || null;
 
   // Update vehicle and driver status
-  vehicle.status = "ON_TRIP";
-  driver.status = "ON_TRIP";
-  driver.currentVehicle = vehicleId;
+  // vehicle.status = "ON_TRIP";
+  // driver.status = "ON_TRIP";
+  // driver.currentVehicle = vehicleId;
 
   await Promise.all([consignment.save(), vehicle.save(), driver.save()]);
 
@@ -1176,37 +1329,53 @@ const confirmDelivery = asyncHandler(async (req, res) => {
   consignment.deliveredBy = deliveredBy || consignment.vehicle.driverName;
   consignment.updatedBy = req.user?._id || null;
 
-  // Update vehicle and driver status
+  // ✅ FREE UP VEHICLE AND DRIVER
   if (consignment.vehicle?.vehicleId) {
-    await Vehicle.findByIdAndUpdate(consignment.vehicle.vehicleId, {
-      status: "AVAILABLE",
+    // Check for other active consignments
+    const activeConsignments = await Consignment.find({
+      "vehicle.vehicleId": consignment.vehicle.vehicleId,
+      _id: { $ne: consignment._id },
+      status: {
+        $in: ["ASSIGNED", "SCHEDULED", "IN_TRANSIT", "DELIVERED_UNCONFIRMED"],
+      },
+      isDeleted: false,
     });
+
+    if (activeConsignments.length === 0) {
+      await Vehicle.findByIdAndUpdate(consignment.vehicle.vehicleId, {
+        status: "AVAILABLE",
+      });
+    }
   }
 
   if (consignment.vehicle?.driverId) {
-    await Driver.findByIdAndUpdate(consignment.vehicle.driverId, {
-      status: "AVAILABLE",
-      currentVehicle: null,
+    // Check for other active consignments
+    const activeConsignments = await Consignment.find({
+      "vehicle.driverId": consignment.vehicle.driverId,
+      _id: { $ne: consignment._id },
+      status: {
+        $in: ["ASSIGNED", "SCHEDULED", "IN_TRANSIT", "DELIVERED_UNCONFIRMED"],
+      },
+      isDeleted: false,
     });
+
+    if (activeConsignments.length === 0) {
+      await Driver.findByIdAndUpdate(consignment.vehicle.driverId, {
+        status: "AVAILABLE",
+        currentVehicle: null,
+      });
+    }
   }
 
   await consignment.save();
 
-  // Send delivery SMS
-  // const smsMessage = `Dear ${consignment.consignor.name}, Your consignment ${consignment.consignmentNumber} is successfully delivered. Delivered To: ${consignment.consignee.name}, Time: ${consignment.deliveryDate.toLocaleDateString()}, ${consignment.deliveryTime}. Thank you for choosing KVL Logistics!`;
-  // await sendSMS(consignment.consignor.mobile, smsMessage);
+  // Send notification...
   if (consignment.consignor.email) {
     try {
       await sendEmail(
         consignment.consignor.email,
         "Consignment Delivered",
-        `Dear ${consignment.consignor.name}, Your consignment ${
-          consignment.consignmentNumber
-        } is successfully delivered. Delivered To: ${
-          consignment.consignee.name
-        }, Time: ${consignment.deliveryDate.toLocaleDateString()}, ${
-          consignment.deliveryTime
-        }. Thank you for choosing KVL Logistics!`
+        `Dear ${consignment.consignor.name}, Your consignment ${consignment.consignmentNumber} is successfully delivered.`
       );
     } catch (e) {
       console.warn("Email send failed (ignored):", e.message);
@@ -1570,6 +1739,7 @@ export {
   confirmDelivery,
   assignDriverToConsignment,
   updateConsignmentsWithEmail,
+  updatePaymentReceipt,
   generateConsignmentPDFController,
   publicTracking,
   getUnbilledConsignments,

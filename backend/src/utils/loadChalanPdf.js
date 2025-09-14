@@ -368,7 +368,12 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     const driverNameVal = `${loadChalan.driver?.driverName || "N/A"}${
       driverPhone ? ` - ${driverPhone}` : ""
     }`;
-    const panNoVal = "AWDPM1568J"; // fallback
+    const panNoVal =
+      loadChalan.vehicle?.ownerAadhaarNumber ||
+      loadChalan.ownerAadhaarNumber ||
+      loadChalan.vehicle?.vehicleId?.ownerAadhaarNumber ||
+      "N/A"; // fallback to N/A instead of hardcoded
+
     const cleanerVal = loadChalan.driver?.cleanerName || "-";
 
     const ownerAddressVal = loadChalan.ownerAddress || "N/A";

@@ -1,17 +1,6 @@
-8prPSbFlrlx1cRRc
+bhai isme hai na yh jo consignment ki jo ID hai wo edit kar saku smjaa or formating bhi change karni hai like KVL - 796 se chlu hona chaiye smjaa or ek ek karke increment hona chaiye or haa ussko admin update kar sakta hai as per the need
 
-{
-  "name": "Biodegradable Plastics",
-  "slug": "biodegradable-plastics",
-  "description": "Plastics that decompose naturally by the action of living organisms.",
-  "image": "https://example.com/images/biodegradable-plastics.jpg",
-  "technicalOverview": "Made from renewable raw materials, these plastics break down in the environment.",
-  "applications": ["Packaging", "Agriculture", "Medical Devices"],
-  "keyFeatures": ["Eco-friendly", "Compostable", "Reduces pollution"],
-  "relatedIndustries": ["Packaging", "Agriculture", "Healthcare"],
-  "seoTitle": "Biodegradable Plastics - Eco Solutions",
-  "seoDescription": "Learn about biodegradable plastics, their features, and applications.",
-  "seoKeywords": ["biodegradable", "eco-friendly", "plastics", "compostable"]
-}
+uske baad isme ek chiz or daal ni hai like smj le abhi alg alg option hai assigned booked transit waghera waghera to muje ek or option dalni hai like Payed Receipt karke smjaa like print ke baju mein ek button hoga pay recipt karke phir date aayegha enter karne ke liye jo ki optional rhega matlb agr nhi fill kiya to current date and time aa jaye gha or agr dalega to apne man se koi bhi date chale jayegha or wo date database mein save hona chaiye so mein filter lagu to usme dikhna chaiye ki iss consignment ka iss din payment hua tha smjaa aisa 
 
 
+dusri baat mere vechile table mein abhi 7,8 hai lekin jab mein consignment mein assign karta hu vechile to muje sirf ek hee dikhta hai vechile dikhta hai to wo change karna padega

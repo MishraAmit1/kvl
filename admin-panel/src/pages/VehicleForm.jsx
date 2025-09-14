@@ -35,7 +35,7 @@ function validate(values) {
   if (!values.ownerMobileNumber)
     errors.ownerMobileNumber = "Mobile number is required";
   if (!values.ownerAadhaarNumber)
-    errors.ownerAadhaarNumber = "Aadhaar number is required";
+    errors.ownerAadhaarNumber = "PanCard Number is required";
   if (!values.ownerAddress) errors.ownerAddress = "Owner address is required";
 
   // Vehicle number format validation
@@ -57,12 +57,12 @@ function validate(values) {
       "Mobile number must be a valid 10-digit Indian mobile number";
   }
 
-  // Aadhaar number validation
+  // PanCard Number validation
   if (
     values.ownerAadhaarNumber &&
     !/^\d{12}$/.test(values.ownerAadhaarNumber)
   ) {
-    errors.ownerAadhaarNumber = "Aadhaar number must be exactly 12 digits";
+    errors.ownerAadhaarNumber = "PanCard Number must be exactly 12 digits";
   }
 
   return errors;
@@ -195,7 +195,7 @@ const VehicleForm = ({
 
             <div>
               <label className="block text-sm font-medium mb-1">
-                Aadhaar Number *
+                PanCard Number *
               </label>
               <Input
                 name="ownerAadhaarNumber"

@@ -306,6 +306,14 @@ const consignmentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    paymentReceiptDate: {
+      type: Date,
+      default: null,
+    },
+    paymentReceiptStatus: {
+      type: Boolean,
+      default: false,
+    },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
