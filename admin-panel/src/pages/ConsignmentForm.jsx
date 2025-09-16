@@ -5,12 +5,14 @@ import { Calculator, AlertCircle } from "lucide-react";
 
 const defaultValues = {
   bookingBranch: "",
+  bookingDate: new Date().toISOString().split("T")[0],
   consignor: "",
   consignee: "",
   fromCity: "",
   toCity: "",
   description: "",
   packages: "",
+  rate: "",
   actualWeight: "",
   chargedWeight: "",
   value: "",
@@ -38,13 +40,18 @@ const defaultValues = {
 const steps = ["Consignor/Consignee", "Details", "Vehicle/Driver", "Review"];
 
 // Enhanced validation function
-function validateStep(step, values, customers) {
+function validateStep(step, values, customers, mode) {
   const errors = {};
 
   if (step === 0) {
     if (!values.bookingBranch?.trim()) {
       errors.bookingBranch = "Booking branch is required";
     }
+    // Add booking date validation for edit mode
+    if (mode === "edit" && !values.bookingDate) {
+      errors.bookingDate = "Booking date is required";
+    }
+
     if (!values.consignor) {
       errors.consignor = "Consignor is required";
     }
@@ -96,7 +103,9 @@ function validateStep(step, values, customers) {
     if (!values.freight || parseFloat(values.freight) < 0) {
       errors.freight = "Freight cannot be negative";
     }
-
+    if (!values.rate || parseFloat(values.rate) <= 0) {
+      errors.rate = "Rate per kg must be greater than 0";
+    }
     // Validate optional charges are not negative
     const chargeFields = [
       "hamali",
@@ -153,7 +162,11 @@ const ConsignmentForm = ({
     values.riskCharges,
     values.serviceTax,
   ]);
-
+  useEffect(() => {
+    if (mode === "edit" && initialValues?._id) {
+      setStep(0); // 👈 Always open in "Details" step for editing
+    }
+  }, [mode, initialValues]);
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -166,7 +179,7 @@ const ConsignmentForm = ({
   };
 
   const nextStep = () => {
-    const errs = validateStep(step, values, customers);
+    const errs = validateStep(step, values, customers, mode); // Add mode
     setErrors(errs);
     if (Object.keys(errs).length === 0) {
       setStep((s) => s + 1);
@@ -183,13 +196,12 @@ const ConsignmentForm = ({
     }
 
     // Final validation before submit
-    const finalErrors = validateStep(1, values, customers);
+    const finalErrors = validateStep(1, values, customers, mode); // Add mode
     if (Object.keys(finalErrors).length > 0) {
       setErrors(finalErrors);
       setStep(1); // Go back to details step
       return;
     }
-
     onSubmit(values);
   };
 
@@ -253,7 +265,32 @@ const ConsignmentForm = ({
               </div>
             )}
           </div>
-
+          {/* Add booking date field here - inside Step 0 */}
+          {mode === "edit" && (
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Booking Date *
+              </label>
+              <Input
+                name="bookingDate"
+                type="date"
+                value={
+                  values.bookingDate ? values.bookingDate.split("T")[0] : ""
+                }
+                onChange={handleChange}
+                disabled={loading}
+                className={`text-sm ${
+                  errors.bookingDate ? "border-red-500" : ""
+                }`}
+              />
+              {errors.bookingDate && (
+                <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.bookingDate}
+                </div>
+              )}
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium mb-1">
               Consignor *
@@ -359,21 +396,6 @@ const ConsignmentForm = ({
               </div>
             )}
           </div>
-        </div>
-      )}
-      {mode === "edit" && (
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Consignment Number *
-          </label>
-          <Input
-            name="consignmentNumber"
-            value={values.consignmentNumber}
-            onChange={handleChange}
-            disabled={loading}
-            placeholder="Enter consignment number"
-            className="text-sm"
-          />
         </div>
       )}
       {/* Step 2: Details */}
@@ -537,6 +559,7 @@ const ConsignmentForm = ({
                 </div>
               )}
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-1">
                 Freight (₹) *
@@ -556,6 +579,28 @@ const ConsignmentForm = ({
                 <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
                   {errors.freight}
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Rate per kg (₹) *
+              </label>
+              <Input
+                name="rate"
+                type="number"
+                step="0.01"
+                min="0"
+                value={values.rate}
+                onChange={handleChange}
+                disabled={loading}
+                placeholder="Enter rate per kg"
+                className={`text-sm ${errors.rate ? "border-red-500" : ""}`}
+              />
+              {errors.rate && (
+                <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.rate}
                 </div>
               )}
             </div>
@@ -976,17 +1021,18 @@ const ConsignmentForm = ({
             <div className="border rounded-lg p-3">
               <h4 className="font-medium mb-2">Party Details</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                {mode === "edit" && values.bookingDate && (
+                  <div className="md:col-span-2">
+                    <div className="font-medium">Booking Date:</div>
+                    <div>
+                      {new Date(values.bookingDate).toLocaleDateString()}
+                    </div>
+                  </div>
+                )}
                 <div>
                   <div className="font-medium">Consignor:</div>
                   <div>
                     {getCustomerDetails(values.consignor)?.name ||
-                      "Not selected"}
-                  </div>
-                </div>
-                <div>
-                  <div className="font-medium">Consignee:</div>
-                  <div>
-                    {getCustomerDetails(values.consignee)?.name ||
                       "Not selected"}
                   </div>
                 </div>
@@ -1040,6 +1086,14 @@ const ConsignmentForm = ({
             <div className="border rounded-lg p-3">
               <h4 className="font-medium mb-2">Charges Breakdown</h4>
               <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span>Rate per kg:</span>
+                  <span>₹{parseFloat(values.rate || 0).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Charged Weight:</span>
+                  <span>{values.chargedWeight} kg</span>
+                </div>
                 <div className="flex justify-between">
                   <span>Freight:</span>
                   <span>

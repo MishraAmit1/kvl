@@ -112,9 +112,8 @@ const createFreightBill = asyncHandler(async (req, res) => {
         consignmentDate: consignment.bookingDate,
         destination: consignment.toCity,
         chargedWeight: chargedWeight,
-        rate:
-          chargedWeight > 0 ? Number((freight / chargedWeight).toFixed(2)) : 0,
-        freight: freight,
+        rate: consignment.rate || 0, // ✅ Take rate directly from consignment
+        freight: consignment.freight || 0,
         hamali: consignment.hamali || 0,
         stCharges: consignment.stCharges || 0,
         doorDelivery: consignment.doorDelivery || 0,
@@ -311,9 +310,10 @@ const getFreightBillById = asyncHandler(async (req, res) => {
 });
 
 // Update freight bill - IMPROVED
+// routes/freightBill.controller.js
 const updateFreightBill = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { adjustments } = req.body;
+  const { billNumber, billDate, billingBranch } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw throwApiError(400, "Invalid freight bill ID format");
@@ -321,61 +321,14 @@ const updateFreightBill = asyncHandler(async (req, res) => {
 
   try {
     const freightBill = await FreightBill.findById(id);
-    if (!freightBill) {
-      throw throwApiError(404, "Freight bill not found");
-    }
+    if (!freightBill) throw throwApiError(404, "Freight bill not found");
 
-    // FIX: Check all non-editable statuses
-    if (["PAID", "PARTIALLY_PAID", "CANCELLED"].includes(freightBill.status)) {
-      const error = throwApiError(
-        400,
-        `Cannot update ${freightBill.status
-          .toLowerCase()
-          .replace("_", " ")} freight bill`
-      );
-      throw error;
-    }
-
-    // Validate and update adjustments
-    if (adjustments) {
-      // Validate adjustments structure
-      if (!Array.isArray(adjustments)) {
-        throw throwApiError(400, "Adjustments must be an array");
-      }
-
-      const validatedAdjustments = adjustments.filter((adj) => {
-        return (
-          adj &&
-          adj.type &&
-          ["DISCOUNT", "EXTRA_CHARGE", "FUEL_SURCHARGE", "OTHER"].includes(
-            adj.type
-          ) &&
-          adj.description &&
-          adj.description.trim().length >= 3 &&
-          adj.amount !== undefined &&
-          adj.amount !== 0 &&
-          !isNaN(adj.amount)
-        );
-      });
-
-      freightBill.adjustments = validatedAdjustments;
-
-      // Recalculate final amount
-      let finalAmount = freightBill.totalAmount || 0;
-      validatedAdjustments.forEach((adjustment) => {
-        if (adjustment.type === "DISCOUNT") {
-          finalAmount -= Math.abs(adjustment.amount);
-        } else {
-          finalAmount += Math.abs(adjustment.amount);
-        }
-      });
-
-      // Ensure final amount is not negative
-      freightBill.finalAmount = Math.max(0, finalAmount);
-    }
+    // Sirf yeh 3 fields update honge
+    if (billNumber) freightBill.billNumber = billNumber;
+    if (billDate) freightBill.billDate = new Date(billDate);
+    if (billingBranch) freightBill.billingBranch = billingBranch;
 
     await freightBill.save();
-
     return sendResponse(
       res,
       200,
@@ -383,8 +336,7 @@ const updateFreightBill = asyncHandler(async (req, res) => {
       "Freight bill updated successfully"
     );
   } catch (error) {
-    if (error instanceof throwApiError) throw error;
-    console.error("Error updating freight bill:", error);
+    console.error("Error updating freight bill meta:", error);
     throw throwApiError(500, "Failed to update freight bill");
   }
 });
@@ -394,47 +346,34 @@ const deleteFreightBill = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw throwApiError(400, "Invalid freight bill ID format");
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid freight bill ID" });
   }
 
-  try {
-    const freightBill = await FreightBill.findById(id);
-    if (!freightBill) {
-      throw throwApiError(404, "Freight bill not found");
-    }
-
-    if (["PAID", "PARTIALLY_PAID"].includes(freightBill.status)) {
-      const error = throwApiError(
-        400,
-        `Cannot delete ${freightBill.status
-          .toLowerCase()
-          .replace("_", " ")} freight bill`
-      );
-      throw error;
-    }
-    // ✅ ADD THIS - Remove billing reference from consignments
-    const consignmentIds = freightBill.consignments.map((c) => c.consignmentId);
-    await Consignment.updateMany(
-      { _id: { $in: consignmentIds } },
-      {
-        $unset: {
-          billedIn: "",
-          billedDate: "",
-        },
-        $set: {
-          paymentStatus: "UNBILLED",
-        },
-      }
-    );
-
-    await FreightBill.findByIdAndDelete(id);
-
-    return sendResponse(res, 200, null, "Freight bill deleted successfully");
-  } catch (error) {
-    if (error instanceof throwApiError) throw error;
-    console.error("Error deleting freight bill:", error);
-    throw throwApiError(500, "Failed to delete freight bill");
+  const freightBill = await FreightBill.findById(id);
+  if (!freightBill) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Freight bill not found" });
   }
+
+  const consignmentIds = freightBill.consignments.map((c) => c.consignmentId);
+  await Consignment.updateMany(
+    { _id: { $in: consignmentIds } },
+    {
+      $unset: { billedIn: "", billedDate: "" },
+      $set: { paymentStatus: "UNBILLED" },
+    }
+  );
+
+  await FreightBill.findByIdAndDelete(id);
+
+  // ✅ Always return JSON response (no 204!)
+  return res.status(200).json({
+    success: true,
+    message: "Freight bill deleted successfully",
+  });
 });
 
 // Get unbilled consignments for a customer - FIXED

@@ -255,7 +255,7 @@ export const generateFreightBillPDF = async (freightBill) => {
     const pageWidth = doc.page.width;
 
     // Much larger KVL Logo at the left
-    drawKVLLogo(doc, margin + 5, margin + 5, { height: 45, color: "#0000" });
+    drawKVLLogo(doc, margin + 5, margin + 5, { height: 45, color: "#D11A1A" });
 
     doc
       .fontSize(13)
@@ -270,7 +270,7 @@ export const generateFreightBillPDF = async (freightBill) => {
     // Company name with special styling - larger, bold, spaced letters
     doc
       .fontSize(20)
-      .fillColor("#0000")
+      .fillColor("#D11A1A")
       .font("Helvetica-Bold")
       .text("KASHI VISHWANATH LOGISTICS", {
         align: "center",
@@ -626,7 +626,7 @@ export const generateFreightBillPDF = async (freightBill) => {
     doc
       .font("Helvetica-Bold")
       .fontSize(13)
-      .fillColor("#0000")
+      .fillColor("#D11A1A")
       .text("For, KASHI VISHWANATH LOGISTICS", 550, footerY + 6);
 
     // GST Number if available

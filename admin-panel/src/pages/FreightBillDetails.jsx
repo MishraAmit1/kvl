@@ -34,6 +34,23 @@ const FreightBillDetails = ({ billId, onClose, onRefresh }) => {
   const [actionLoading, setActionLoading] = useState(false);
   const [emailModal, setEmailModal] = useState(false);
   const [customEmail, setCustomEmail] = useState("");
+  const [editModal, setEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    billNumber: "",
+    billDate: "",
+    billingBranch: "",
+  });
+  useEffect(() => {
+    if (billDetails && editModal) {
+      setEditForm({
+        billNumber: billDetails.billNumber || "",
+        billDate: billDetails.billDate
+          ? new Date(billDetails.billDate).toISOString().split("T")[0]
+          : "",
+        billingBranch: billDetails.billingBranch || "",
+      });
+    }
+  }, [billDetails, editModal]);
 
   useEffect(() => {
     fetchBillDetails();
@@ -209,6 +226,13 @@ const FreightBillDetails = ({ billId, onClose, onRefresh }) => {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => setEditModal(true)}
+          >
+            <Edit className="h-4 w-4 mr-1" /> Edit
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleDownloadPDF}
             disabled={actionLoading}
           >
@@ -225,7 +249,27 @@ const FreightBillDetails = ({ billId, onClose, onRefresh }) => {
             <Printer className="h-4 w-4 mr-2" />
             Print
           </Button>
-
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={async () => {
+              if (
+                window.confirm("Are you sure you want to delete this bill?")
+              ) {
+                try {
+                  await ApiService.deleteFreightBill(billId);
+                  toast.success("Bill deleted successfully!");
+                  onClose();
+                  onRefresh();
+                } catch (err) {
+                  toast.error("Delete failed: " + err.message);
+                }
+              }
+            }}
+          >
+            <X className="h-4 w-4 mr-1" />
+            Delete Bill
+          </Button>
           {billDetails.status !== "PAID" &&
             billDetails.status !== "CANCELLED" && (
               <>
@@ -625,6 +669,68 @@ const FreightBillDetails = ({ billId, onClose, onRefresh }) => {
                   {actionLoading ? "Sending..." : "Send Email"}
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {editModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-card rounded-lg shadow-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Edit Freight Bill</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm mb-1">Bill Number</label>
+                <input
+                  type="text"
+                  value={editForm.billNumber}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, billNumber: e.target.value })
+                  }
+                  className="w-full border rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Bill Date</label>
+                <input
+                  type="date"
+                  value={editForm.billDate}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, billDate: e.target.value })
+                  }
+                  className="w-full border rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Billing Branch</label>
+                <input
+                  type="text"
+                  value={editForm.billingBranch}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, billingBranch: e.target.value })
+                  }
+                  className="w-full border rounded px-2 py-1"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end mt-4 gap-2">
+              <Button variant="outline" onClick={() => setEditModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    await ApiService.updateFreightBill(billId, editForm);
+                    toast.success("Bill updated successfully!");
+                    setEditModal(false);
+                    fetchBillDetails();
+                    onRefresh();
+                  } catch (err) {
+                    toast.error("Update failed: " + err.message);
+                  }
+                }}
+              >
+                Save
+              </Button>
             </div>
           </div>
         </div>

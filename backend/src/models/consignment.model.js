@@ -6,7 +6,6 @@ const consignmentSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true,
     },
     bookingDate: { type: Date, required: true, default: Date.now },
     bookingBranch: {
@@ -106,7 +105,12 @@ const consignmentSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-
+    rate: {
+      type: Number,
+      required: true,
+      min: [0.01, "Rate must be greater than 0"],
+      max: [10000, "Rate cannot exceed 10000 per kg"],
+    },
     // Charges
     freight: {
       type: Number,
@@ -326,8 +330,6 @@ const consignmentSchema = new mongoose.Schema(
 
 consignmentSchema.index({ status: 1 });
 consignmentSchema.index({ bookingDate: -1 });
-consignmentSchema.index({ "consignor.customerId": 1 });
-consignmentSchema.index({ "consignee.customerId": 1 });
 consignmentSchema.index({ isDeleted: 1 });
 consignmentSchema.index({ paymentStatus: 1 });
 consignmentSchema.index({ billedIn: 1 });

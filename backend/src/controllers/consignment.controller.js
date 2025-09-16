@@ -22,6 +22,7 @@ const createConsignment = asyncHandler(async (req, res) => {
     actualWeight,
     chargedWeight,
     value,
+    rate,
     freight,
     hamali,
     stCharges,
@@ -130,6 +131,7 @@ const createConsignment = asyncHandler(async (req, res) => {
     consignor,
     consignee,
     fromCity,
+    rate,
     toCity,
     description,
     packages,
@@ -381,10 +383,12 @@ const updateConsignment = asyncHandler(async (req, res) => {
   }
 
   // Cannot edit after delivery
-  if (consignment.status === "DELIVERED") {
-    throw throwApiError(400, "Cannot edit delivered consignment");
+  // if (consignment.status === "DELIVERED") {
+  //   throw throwApiError(400, "Cannot edit delivered consignment");
+  // }
+  if (updateData.bookingDate) {
+    updateData.bookingDate = new Date(updateData.bookingDate);
   }
-
   // ✅ VALIDATE UPDATES IF PROVIDED
   const phoneRegex = /^[6-9]\d{9}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

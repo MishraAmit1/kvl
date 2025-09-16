@@ -25,7 +25,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
       const pageW = doc.page.width;
       const pageH = doc.page.height;
       doc.save();
-      doc.fillColor("#0000").opacity(0.06);
+      doc.fillColor("#D11A1A").opacity(0.06);
       doc.font("Helvetica-Bold").fontSize(150);
       doc.rotate(-30, { origin: [pageW / 2, pageH / 2] });
       const wmText = "KVL";
@@ -40,7 +40,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     // === Helpers ===
     const drawKVLLogo = (doc, x, y, opts = {}) => {
       const h = opts.height ?? 18;
-      const color = opts.color ?? "#0000";
+      const color = opts.color ?? "#D11A1A";
       const t = opts.thickness ?? Math.max(2, Math.round(h * 0.2));
       const gap = opts.gap ?? Math.round(h * 0.06);
       const skew = opts.skew ?? Math.max(1, h * 0.09);
@@ -197,7 +197,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     const margin = 15;
     const pageWidth = doc.page.width;
 
-    drawKVLLogo(doc, margin + 5, margin + 5, { height: 30, color: "#0000" });
+    drawKVLLogo(doc, margin + 5, margin + 5, { height: 30, color: "#D11A1A" });
 
     // Mobile
     doc
@@ -230,7 +230,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
 
       // black border
       doc.save();
-      doc.lineWidth(1.3).strokeColor("#0000");
+      doc.lineWidth(1.3).strokeColor("#D11A1A");
       doc.rect(boxX, boxY, boxW, boxH).stroke();
       doc.restore();
 
@@ -247,14 +247,14 @@ export const generateLoadChalanPDF = async (loadChalan) => {
       doc
         .font("Helvetica-Bold")
         .fontSize(valueFS)
-        .fillColor("#0000")
+        .fillColor("#D11A1A")
         .text(value, labelX + labelW + 8, boxY + 3, { lineBreak: false });
     }
 
     // Company title
     doc
       .fontSize(14)
-      .fillColor("#0000")
+      .fillColor("#D11A1A")
       .font("Helvetica-Bold")
       .text("KASHI VISHWANATH LOGISTICS", 0, margin + 12, {
         align: "center",
@@ -770,9 +770,9 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     prow("Add UnLoading", addUnloading);
     psep();
     prow("Total. :", totalFrt, { color: "#0033CC", bold: true });
-    prow("Less Advance", lessAdvance, { color: "#0000" });
-    prow("Less RTGS", lessRTGS, { color: "#0000" });
-    prow("Less TDS.", lessTDS, { color: "#0000" });
+    prow("Less Advance", lessAdvance, { color: "#D11A1A" });
+    prow("Less RTGS", lessRTGS, { color: "#D11A1A" });
+    prow("Less TDS.", lessTDS, { color: "#D11A1A" });
     psep();
     prow("Balance Freight :", balanceFrt, { bold: true });
 

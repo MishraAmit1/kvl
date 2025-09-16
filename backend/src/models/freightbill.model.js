@@ -13,12 +13,6 @@ const freightBillSchema = new mongoose.Schema(
       type: Date,
       required: true,
       default: Date.now,
-      validate: {
-        validator: function (v) {
-          return v <= new Date();
-        },
-        message: "Bill date cannot be in the future",
-      },
     },
     // Party Details
     party: {
@@ -77,12 +71,6 @@ const freightBillSchema = new mongoose.Schema(
         consignmentDate: {
           type: Date,
           required: true,
-          validate: {
-            validator: function (v) {
-              return v <= new Date();
-            },
-            message: "Consignment date cannot be in the future",
-          },
         },
         destination: {
           type: String,

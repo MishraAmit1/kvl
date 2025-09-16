@@ -1,12 +1,21 @@
 export const generateConsignmentPDF = async (consignment, res) => {
+  if (!consignment) {
+    return res.status(404).json({ error: "Consignment not found" });
+  }
+  // Pipe PDF to response
+  // ✅ Generate RANDOM but SAFE filename — consignmentNumber se independent!
+  const randomString = Math.random().toString(36).substring(2, 8); // e.g. "a7b9c2"
+  const timestamp = Date.now(); // Extra uniqueness
+  const safeFileName = `consignment_${randomString}_${timestamp}.pdf`;
+
   const PDFDocument = (await import("pdfkit")).default;
   const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 0 });
 
-  // Pipe PDF to response
+  // ✅ SET HEADERS ONLY ONCE — with SAFE filename
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename=consignment-${consignment.consignmentNumber}.pdf`
+    `attachment; filename="${safeFileName}"`
   );
   doc.pipe(res);
 
@@ -16,7 +25,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
     const pageH = doc.page.height;
 
     doc.save();
-    doc.fillColor("#0000").opacity(0.06);
+    doc.fillColor("#D11A1A").opacity(0.06);
     doc.font("Helvetica-Bold");
     const wmSize = 260;
     doc.fontSize(wmSize);
@@ -34,7 +43,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
   // === DRAW LOGO FUNCTION (Reusable) ===
   const drawKVLLogo = (doc, x, y, opts = {}) => {
     const h = opts.height ?? 18;
-    const color = opts.color ?? "#0000";
+    const color = opts.color ?? "#D11A1A";
     const t = opts.thickness ?? Math.max(2, Math.round(h * 0.2));
     const gap = opts.gap ?? Math.round(h * 0.06);
     const skew = opts.skew ?? Math.max(1, h * 0.09);
@@ -203,12 +212,14 @@ export const generateConsignmentPDF = async (consignment, res) => {
 
     // CENTER PANEL TEXT
     doc.fillColor("black").font("Helvetica-Bold").fontSize(16);
-    drawKVLLogo(doc, centerX + 6, startY + 4, { height: 28, color: "#0000" });
+    drawKVLLogo(doc, centerX + 6, startY + 4, { height: 28, color: "#D11A1A" });
 
-    doc.text("KASHI VISHWANATH LOGISTICS", centerX + 50, startY + 5, {
-      width: centerColWidth - 60,
-      align: "center",
-    });
+    doc
+      .fillColor("#D11A1A")
+      .text("KASHI VISHWANATH LOGISTICS", centerX + 50, startY + 5, {
+        width: centerColWidth - 60,
+        align: "center",
+      });
 
     doc.fillColor("black").font("Helvetica-Bold").fontSize(11);
     doc.text(
@@ -579,7 +590,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
       const rsPaidCenterY = tableY + headerHeight + (tableH - headerHeight) / 2;
       doc.translate(rsPaidCenterX, rsPaidCenterY);
       doc.rotate(-45);
-      doc.fontSize(20).font("Helvetica-Bold").fillColor("#0000").opacity(0.3);
+      doc.fontSize(20).font("Helvetica-Bold").fillColor("#D11A1A").opacity(0.3);
       doc.text(consignment.toPay, -30, -10, {
         width: 60,
         align: "center",
@@ -616,12 +627,10 @@ export const generateConsignmentPDF = async (consignment, res) => {
       { width: colWidths[4] - 4, align: "center" }
     );
 
-    const ratePerKg =
-      consignment?.chargedWeight && consignment.chargedWeight > 0
-        ? (consignment.freight || 0) / consignment.chargedWeight
-        : 0;
+    // Replace the calculation with direct field access
+    const ratePerKg = consignment?.rate || 0;
 
-    doc.text(ratePerKg.toFixed(2) || "", colX[5] + 2, contentY, {
+    doc.text(ratePerKg.toFixed(2) || "0.00", colX[5] + 2, contentY, {
       width: colWidths[5] - 4,
       align: "center",
     });
@@ -810,7 +819,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
     const sigLineEndX = startX + 360;
     doc.moveTo(sigLineStartX, sigLineY).lineTo(sigLineEndX, sigLineY).stroke();
 
-    doc.fillColor("#0000").font("Helvetica-Bold").fontSize(12);
+    doc.fillColor("#D11A1A").font("Helvetica-Bold").fontSize(12);
     doc.text("KASHI VISHWANATH LOGISTICS", startX, stripY + stripH - 18, {
       width: totalWidth - 10,
       align: "right",

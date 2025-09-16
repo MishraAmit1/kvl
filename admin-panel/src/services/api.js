@@ -99,9 +99,18 @@ class ApiService {
         );
       }
 
-      const data = await response.json();
-      console.log(`✅ Request successful:`, endpoint);
-      return data;
+      // 🟢 New code
+      const text = await response.text(); // body ko text me le lo
+      if (!text) {
+        // agar empty body hai (DELETE pe 204 aata hai), safe JSON return karo
+        return { success: true };
+      }
+      try {
+        return JSON.parse(text); // agar JSON mila toh parse karo
+      } catch {
+        // agar valid JSON nahi mila toh raw text return kar do
+        return { success: true, message: text };
+      }
     } catch (error) {
       console.error(`❌ API request failed for ${endpoint}:`, error);
       throw error;

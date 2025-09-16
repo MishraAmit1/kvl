@@ -174,12 +174,6 @@ const Consignments = () => {
   };
 
   const handleEdit = (consignment) => {
-    if (consignment.status === "DELIVERED") {
-      toast.error("Cannot edit delivered consignment");
-      return;
-    }
-
-    // Transform for form initial values
     setEditConsignment({
       ...consignment,
       consignor:
@@ -201,10 +195,10 @@ const Consignments = () => {
   };
 
   const handleDelete = async (consignment) => {
-    if (consignment.status === "DELIVERED") {
-      toast.error("Cannot delete delivered consignment");
-      return;
-    }
+    // if (consignment.status === "DELIVERED") {
+    //   toast.error("Cannot delete delivered consignment");
+    //   return;
+    // }
 
     if (
       window.confirm(`Delete consignment ${consignment.consignmentNumber}?`)
@@ -243,7 +237,6 @@ const Consignments = () => {
           credentials: "include",
         }
       );
-
       if (!response.ok) {
         throw new Error("Failed to download PDF");
       }
@@ -492,11 +485,7 @@ const Consignments = () => {
               variant="ghost"
               onClick={() => handleEdit(c)}
               title="Edit"
-              disabled={
-                formLoading ||
-                c.status === "DELIVERED" ||
-                c.paymentReceiptStatus
-              }
+              disabled={formLoading || c.paymentReceiptStatus} // ya sirf formLoading
               className="h-8 w-8"
             >
               <Pencil className="h-4 w-4 text-primary" />
@@ -532,11 +521,6 @@ const Consignments = () => {
               variant="ghost"
               onClick={() => handleDelete(c)}
               title="Delete"
-              disabled={
-                formLoading ||
-                c.status === "DELIVERED" ||
-                c.paymentReceiptStatus
-              }
               className="h-8 w-8 hidden lg:inline-flex"
             >
               <Trash2 className="h-4 w-4 text-destructive" />
