@@ -518,10 +518,10 @@ const deleteConsignment = asyncHandler(async (req, res) => {
     throw throwApiError(404, "Consignment not found");
   }
 
-  // Cannot delete after delivery
-  if (consignment.status === "DELIVERED") {
-    throw throwApiError(400, "Cannot delete delivered consignment");
-  }
+  // // Cannot delete after delivery
+  // if (consignment.status === "DELIVERED") {
+  //   throw throwApiError(400, "Cannot delete delivered consignment");
+  // }
 
   await Consignment.findByIdAndUpdate(id, {
     isDeleted: true,
