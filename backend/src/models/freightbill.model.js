@@ -38,16 +38,6 @@ const freightBillSchema = new mongoose.Schema(
         type: String,
         trim: true,
         uppercase: true,
-        match: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/,
-        validate: {
-          validator: function (v) {
-            if (!v) return true; // Allow empty GST
-            return /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(
-              v
-            );
-          },
-          message: "Please provide a valid GST number",
-        },
       },
     },
     // Consignments in this bill
@@ -86,7 +76,7 @@ const freightBillSchema = new mongoose.Schema(
           max: [1000000, "Charged weight cannot exceed 10000 kg"],
         },
         rate: {
-          type: Number,
+          type: String,
           required: true,
           min: [0.01, "Rate must be greater than 0"],
           max: [10000, "Rate cannot exceed 10000 per kg"],

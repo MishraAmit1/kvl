@@ -434,7 +434,7 @@ export const generateFreightBillPDF = async (freightBill) => {
           const destination =
             consignment.destination || consignment.toCity || "N/A";
           const chargedWeight = consignment.chargedWeight || 0;
-          const rate = consignment.rate || 0;
+          const rate = consignment.rate || "0";
           const freight = consignment.freight || 0;
           const stCharges = consignment.stCharges || 0;
           const hamali = consignment.hamali || 0;
@@ -467,7 +467,7 @@ export const generateFreightBillPDF = async (freightBill) => {
           });
 
           // Rate
-          doc.text(formatDecimal(rate), colX[4] + 2, currentY + 8, {
+          doc.text(rate, colX[4] + 2, currentY + 8, {
             width: colX[5] - colX[4] - 4,
             align: "center",
           });

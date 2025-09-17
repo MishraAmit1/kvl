@@ -106,10 +106,9 @@ const consignmentSchema = new mongoose.Schema(
       required: true,
     },
     rate: {
-      type: Number,
+      type: String,
+      trim: true,
       required: true,
-      min: [0.01, "Rate must be greater than 0"],
-      max: [10000, "Rate cannot exceed 10000 per kg"],
     },
     // Charges
     freight: {

@@ -8,7 +8,6 @@ const loadChalanSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       uppercase: true,
-      match: [/^[A-Z0-9]+$/, 'Only letters and numbers allowed']
     },
 
     date: {
@@ -43,11 +42,10 @@ const loadChalanSchema = new mongoose.Schema(
     // Vehicle Info
     vehicle: {
       vehicleId: { type: mongoose.Schema.Types.ObjectId, ref: "Vehicle" },
-      vehicleNumber: { 
-        type: String, 
-        trim: true, 
+      vehicleNumber: {
+        type: String,
+        trim: true,
         uppercase: true,
-        match: [/^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$/, 'Invalid vehicle number format']
       },
       engineNumber: { type: String, trim: true, uppercase: true },
       chassisNumber: { type: String, trim: true, uppercase: true },
@@ -119,21 +117,31 @@ const loadChalanSchema = new mongoose.Schema(
 );
 
 // Business Logic Methods
-loadChalanSchema.methods.calculateTotals = function() {
+loadChalanSchema.methods.calculateTotals = function () {
   this.totalLRCount = this.consignments.length;
-  this.totalPackages = this.consignments.reduce((sum, c) => sum + (c.packages || 0), 0);
-  this.totalWeight = this.consignments.reduce((sum, c) => sum + (c.weight || 0), 0);
-  this.totalFreight = this.consignments.reduce((sum, c) => sum + (c.freightAmount || 0), 0);
+  this.totalPackages = this.consignments.reduce(
+    (sum, c) => sum + (c.packages || 0),
+    0
+  );
+  this.totalWeight = this.consignments.reduce(
+    (sum, c) => sum + (c.weight || 0),
+    0
+  );
+  this.totalFreight = this.consignments.reduce(
+    (sum, c) => sum + (c.freightAmount || 0),
+    0
+  );
   return this;
 };
 
-loadChalanSchema.methods.calculateBalance = function() {
-  this.balanceFreight = this.totalFreight - this.advancePaid - this.tdsDeduction;
+loadChalanSchema.methods.calculateBalance = function () {
+  this.balanceFreight =
+    this.totalFreight - this.advancePaid - this.tdsDeduction;
   return this;
 };
 
 // Pre-save hook to auto-calculate totals
-loadChalanSchema.pre('save', function(next) {
+loadChalanSchema.pre("save", function (next) {
   this.calculateTotals();
   this.calculateBalance();
   next();

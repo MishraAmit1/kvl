@@ -32,13 +32,13 @@ const customerSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      match: /^[1-9][0-9]{5}$/,
-      validate: {
-        validator: function (v) {
-          return /^[1-9][0-9]{5}$/.test(v);
-        },
-        message: "Pincode must be a valid 6-digit number",
-      },
+      // match: /^[1-9][0-9]{5}$/,
+      // validate: {
+      //   validator: function (v) {
+      //     return /^[1-9][0-9]{5}$/.test(v);
+      //   },
+      //   message: "Pincode must be a valid 6-digit number",
+      // },
     },
     mobile: {
       type: String,

@@ -7,13 +7,6 @@ const vehicleSchema = new mongoose.Schema(
       required: true,
       trim: true,
       uppercase: true,
-      match: /^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$/,
-      validate: {
-        validator: function (v) {
-          return /^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$/.test(v);
-        },
-        message: "Vehicle number must be in format: KA01AB1234",
-      },
     },
 
     vehicleType: {
@@ -33,7 +26,6 @@ const vehicleSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
     ownerMobileNumber: {
       type: String,
       required: true,

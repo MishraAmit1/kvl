@@ -79,13 +79,13 @@ const createConsignment = asyncHandler(async (req, res) => {
   }
 
   // Validate GST if provided
-  if (consignor.gstNumber && !gstRegex.test(consignor.gstNumber)) {
-    throw throwApiError(400, "Invalid consignor GST number format");
-  }
+  // if (consignor.gstNumber && !gstRegex.test(consignor.gstNumber)) {
+  //   throw throwApiError(400, "Invalid consignor GST number format");
+  // }
 
-  if (consignee.gstNumber && !gstRegex.test(consignee.gstNumber)) {
-    throw throwApiError(400, "Invalid consignee GST number format");
-  }
+  // if (consignee.gstNumber && !gstRegex.test(consignee.gstNumber)) {
+  //   throw throwApiError(400, "Invalid consignee GST number format");
+  // }
 
   // Validate weight logic
   if (Number(chargedWeight) < Number(actualWeight)) {
@@ -436,16 +436,16 @@ const updateConsignment = asyncHandler(async (req, res) => {
   //     throw throwApiError(400, "Invalid consignee GST number");
   //   }
   // }
-  if (updateData.consignmentNumber) {
-    // Optional: check if number already exists for another consignment
-    const exists = await Consignment.findOne({
-      consignmentNumber: updateData.consignmentNumber,
-      _id: { $ne: id },
-    });
-    if (exists) {
-      throw throwApiError(400, "Consignment number already in use");
-    }
-  }
+  // if (updateData.consignmentNumber) {
+  //   // Optional: check if number already exists for another consignment
+  //   const exists = await Consignment.findOne({
+  //     consignmentNumber: updateData.consignmentNumber,
+  //     _id: { $ne: id },
+  //   });
+  //   if (exists) {
+  //     throw throwApiError(400, "Consignment number already in use");
+  //   }
+  // }
   // Validate weight logic if updating
   if (updateData.chargedWeight && updateData.actualWeight) {
     if (Number(updateData.chargedWeight) < Number(updateData.actualWeight)) {
