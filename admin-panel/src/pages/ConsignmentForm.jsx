@@ -6,6 +6,7 @@ import { Calculator, AlertCircle } from "lucide-react";
 const defaultValues = {
   bookingBranch: "",
   bookingDate: new Date().toISOString().split("T")[0],
+  consignmentNumber: "",
   consignor: "",
   consignee: "",
   fromCity: "",
@@ -262,6 +263,27 @@ const ConsignmentForm = ({
               <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 {errors.bookingBranch}
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Consignment Number *
+            </label>
+            <Input
+              name="consignmentNumber"
+              value={values.consignmentNumber}
+              onChange={handleChange}
+              disabled={loading}
+              placeholder="Enter consignment number"
+              className={`text-sm ${
+                errors.consignmentNumber ? "border-red-500" : ""
+              }`}
+            />
+            {errors.consignmentNumber && (
+              <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.consignmentNumber}
               </div>
             )}
           </div>
@@ -1014,7 +1036,10 @@ const ConsignmentForm = ({
               </div>
             </div>
           </div>
-
+          <div>
+            <div className="font-medium">Consignment No:</div>
+            <div>{values.consignmentNumber}</div>
+          </div>
           {/* Review Details */}
           <div className="space-y-4">
             {/* Party Details */}

@@ -4,7 +4,6 @@ import { Driver } from "../models/driver.model.js";
 import { throwApiError } from "../utils/apiError.js";
 import { sendResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { generateConsignmentNumber } from "../utils/generateNumbers.js";
 import { sendEmail } from "../utils/emailService.js";
 import { Customer } from "../models/customer.model.js";
 import { generateConsignmentPDF } from "../utils/pdfGenerator.js";
@@ -111,7 +110,10 @@ const createConsignment = asyncHandler(async (req, res) => {
   }
 
   // Generate consignment number
-  const consignmentNumber = await generateConsignmentNumber();
+  if (!req.body.consignmentNumber) {
+    throw throwApiError(400, "Consignment number is required");
+  }
+  const consignmentNumber = req.body.consignmentNumber;
 
   // Calculate grand total
   const grandTotal =
@@ -434,7 +436,16 @@ const updateConsignment = asyncHandler(async (req, res) => {
   //     throw throwApiError(400, "Invalid consignee GST number");
   //   }
   // }
-
+  if (updateData.consignmentNumber) {
+    // Optional: check if number already exists for another consignment
+    const exists = await Consignment.findOne({
+      consignmentNumber: updateData.consignmentNumber,
+      _id: { $ne: id },
+    });
+    if (exists) {
+      throw throwApiError(400, "Consignment number already in use");
+    }
+  }
   // Validate weight logic if updating
   if (updateData.chargedWeight && updateData.actualWeight) {
     if (Number(updateData.chargedWeight) < Number(updateData.actualWeight)) {
