@@ -1,0 +1,23 @@
+{
+  "total": 22,
+  "successful": 21,
+  "failed": 1,
+  "withWarnings": 0,
+  "failedConsignments": [
+    {
+      "id": "68c7d1f9b21bbd7b6c9acc91",
+      "number": "KVL-799",
+      "errors": [
+        "Invalid rate: \"FIX\" is not a number"
+      ],
+      "warnings": [],
+      "data": {
+        "freight": 20500,
+        "hasConsignor": true,
+        "hasConsignee": true,
+        "status": "DELIVERED"
+      }
+    }
+  ],
+  "consignmentsWithWarnings": []
+}

@@ -108,7 +108,6 @@ const consignmentSchema = new mongoose.Schema(
     rate: {
       type: String,
       trim: true,
-      required: true,
     },
     // Charges
     freight: {

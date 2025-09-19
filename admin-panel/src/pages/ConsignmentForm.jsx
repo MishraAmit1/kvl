@@ -104,9 +104,12 @@ function validateStep(step, values, customers, mode) {
     if (!values.freight || parseFloat(values.freight) < 0) {
       errors.freight = "Freight cannot be negative";
     }
-    if (!values.rate || parseFloat(values.rate) <= 0) {
-      errors.rate = "Rate per kg must be greater than 0";
+
+    // FIX: Use values.rate instead of rate, and don't use throwApiError
+    if (!values.rate || !values.rate.trim()) {
+      errors.rate = "Rate is required";
     }
+
     // Validate optional charges are not negative
     const chargeFields = [
       "hamali",
@@ -605,18 +608,14 @@ const ConsignmentForm = ({
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Rate per kg (₹) *
-              </label>
+              <label className="block text-sm font-medium mb-1">Rate *</label>
               <Input
                 name="rate"
-                type="number"
-                step="0.01"
-                min="0"
+                type="text" // Changed from "number" to "text"
                 value={values.rate}
                 onChange={handleChange}
                 disabled={loading}
-                placeholder="Enter rate per kg"
+                placeholder="Enter rate (e.g., 50/kg or Fixed 500)"
                 className={`text-sm ${errors.rate ? "border-red-500" : ""}`}
               />
               {errors.rate && (
@@ -1106,14 +1105,13 @@ const ConsignmentForm = ({
                 </div>
               </div>
             </div>
-
             {/* Charges Breakdown */}
             <div className="border rounded-lg p-3">
               <h4 className="font-medium mb-2">Charges Breakdown</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span>Rate per kg:</span>
-                  <span>₹{parseFloat(values.rate || 0).toFixed(2)}</span>
+                  <span>Rate:</span>
+                  <span>{values.rate || "Not specified"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Charged Weight:</span>

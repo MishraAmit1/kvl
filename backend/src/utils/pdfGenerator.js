@@ -628,9 +628,9 @@ export const generateConsignmentPDF = async (consignment, res) => {
     );
 
     // Replace the calculation with direct field access
-    const ratePerKg = consignment?.rate || 0;
+    const rateDisplay = consignment?.rate ? String(consignment.rate) : "-";
 
-    doc.text(ratePerKg.toFixed(2) || "0.00", colX[5] + 2, contentY, {
+    doc.text(rateDisplay, colX[5] + 2, contentY, {
       width: colWidths[5] - 4,
       align: "center",
     });

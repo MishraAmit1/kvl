@@ -78,8 +78,6 @@ const freightBillSchema = new mongoose.Schema(
         rate: {
           type: String,
           required: true,
-          min: [0.01, "Rate must be greater than 0"],
-          max: [10000, "Rate cannot exceed 10000 per kg"],
         },
         freight: {
           type: Number,
