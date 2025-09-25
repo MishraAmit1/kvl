@@ -35,19 +35,6 @@ function validate(values) {
   if (!values.ownerMobileNumber)
     errors.ownerMobileNumber = "Mobile number is required";
   if (!values.ownerAddress) errors.ownerAddress = "Owner address is required";
-
-  // Vehicle number format validation
-
-  // Mobile number validation
-
-  // PanCard Number validation
-  if (
-    values.ownerAadhaarNumber &&
-    !/^\d{10}$/.test(values.ownerAadhaarNumber)
-  ) {
-    errors.ownerAadhaarNumber = "PanCard Number must be exactly 10 digits";
-  }
-
   return errors;
 }
 
@@ -185,8 +172,6 @@ const VehicleForm = ({
                 value={values.ownerAadhaarNumber}
                 onChange={handleChange}
                 disabled={loading}
-                placeholder="123456789012"
-                maxLength="10"
                 className="text-sm"
               />
               {errors.ownerAadhaarNumber && (
