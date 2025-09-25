@@ -15,6 +15,7 @@ const LoadChalanForm = () => {
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState({
+    chalanNumber: "", // Added this field
     bookingBranch: "",
     destinationHub: "",
     dispatchTime: "",
@@ -107,6 +108,7 @@ const LoadChalanForm = () => {
       const chalan = existingChalan.data;
 
       setFormData({
+        chalanNumber: chalan.chalanNumber || "", // Added this
         bookingBranch: chalan.bookingBranch || "",
         destinationHub: chalan.destinationHub || "",
         dispatchTime: chalan.dispatchTime || "",
@@ -132,7 +134,6 @@ const LoadChalanForm = () => {
 
   // Effect to track selected consignments changes and remove duplicates
   useEffect(() => {
-    // Remove any duplicates that might exist
     const uniqueConsignments = selectedConsignments.filter(
       (consignment, index, self) =>
         index ===
@@ -163,12 +164,10 @@ const LoadChalanForm = () => {
   };
 
   const handleConsignmentSelect = (consignment) => {
-    // Check if consignment is already selected by ID
     const isAlreadySelected = selectedConsignments.some(
       (c) => c.consignmentId === consignment._id
     );
 
-    // Also check by consignment number as backup
     const isAlreadySelectedByNumber = selectedConsignments.some(
       (c) => c.consignmentNumber === consignment.consignmentNumber
     );
@@ -201,6 +200,12 @@ const LoadChalanForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate chalan number
+    if (!formData.chalanNumber) {
+      toast.error("Please enter a chalan number");
+      return;
+    }
+
     if (selectedConsignments.length === 0) {
       toast.error("Please select at least one consignment");
       return;
@@ -216,7 +221,6 @@ const LoadChalanForm = () => {
 
   if (isLoadingChalan || isAuthLoading) return <Shimmer />;
 
-  // Show message if not authenticated
   if (!isAuthenticated) {
     return (
       <div className="p-6">
@@ -230,37 +234,27 @@ const LoadChalanForm = () => {
     );
   }
 
-  // Handle different API response structures
   const allConsignments =
     consignmentsData?.data?.consignments || consignmentsData?.data || [];
   const allVehicles = vehiclesData?.data?.vehicles || vehiclesData?.data || [];
   const allDrivers = driversData?.data?.drivers || driversData?.data || [];
 
-  // Data processing
-
-  // Filter for available items and exclude already selected consignments in edit mode
   const selectedConsignmentIds = selectedConsignments.map(
     (c) => c.consignmentId
   );
 
-  // Only show consignments that are NOT already selected
   const consignments = allConsignments.filter((c) => {
-    // Check by ID
     const isAlreadySelectedById = selectedConsignmentIds.includes(c._id);
-
-    // Check by consignment number as backup
     const isAlreadySelectedByNumber = selectedConsignments.some(
       (selected) => selected.consignmentNumber === c.consignmentNumber
     );
-
     const isAlreadySelected =
       isAlreadySelectedById || isAlreadySelectedByNumber;
-
     return !isAlreadySelected;
   });
 
-  const vehicles = allVehicles; // Show all vehicles for now
-  const drivers = allDrivers; // Show all drivers for now
+  const vehicles = allVehicles;
+  const drivers = allDrivers;
 
   return (
     <div className="p-6">
@@ -285,9 +279,31 @@ const LoadChalanForm = () => {
             Basic Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Chalan Number Field - NEW */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Booking Branch
+                Chalan Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.chalanNumber}
+                onChange={(e) =>
+                  handleInputChange(
+                    "chalanNumber",
+                    e.target.value.toUpperCase()
+                  )
+                }
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter chalan number (e.g., LC241201001)"
+                required
+              />
+              {/* <p className="text-xs text-gray-500 mt-1">
+                Format: LC + YYMMDD + 3-digit sequence (e.g., LC241201001)
+              </p> */}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Booking Branch <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -301,7 +317,7 @@ const LoadChalanForm = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Destination Hub
+                Destination Hub <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -326,15 +342,6 @@ const LoadChalanForm = () => {
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            {/* <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Posting By</label>
-              <input
-                type="text"
-                value={formData.postingBy}
-                onChange={(e) => handleInputChange('postingBy', e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div> */}
           </div>
         </div>
 
@@ -369,7 +376,6 @@ const LoadChalanForm = () => {
                       "vehicle.chassisNumber",
                       vehicle.chassisNumber
                     );
-                    // Add owner details here
                     handleInputChange("ownerName", vehicle.ownerName || "");
                     handleInputChange(
                       "ownerAddress",
@@ -491,6 +497,19 @@ const LoadChalanForm = () => {
                 }
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 readOnly
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Cleaner Name
+              </label>
+              <input
+                type="text"
+                value={formData.driver.cleanerName}
+                onChange={(e) =>
+                  handleInputChange("driver.cleanerName", e.target.value)
+                }
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>

@@ -34,35 +34,18 @@ function validate(values) {
   if (!values.ownerName) errors.ownerName = "Owner name is required";
   if (!values.ownerMobileNumber)
     errors.ownerMobileNumber = "Mobile number is required";
-  if (!values.ownerAadhaarNumber)
-    errors.ownerAadhaarNumber = "PanCard Number is required";
   if (!values.ownerAddress) errors.ownerAddress = "Owner address is required";
 
   // Vehicle number format validation
-  if (
-    values.vehicleNumber &&
-    !/^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$/.test(
-      values.vehicleNumber.toUpperCase()
-    )
-  ) {
-    errors.vehicleNumber = "Vehicle number must be in format: KA01AB1234";
-  }
 
   // Mobile number validation
-  if (
-    values.ownerMobileNumber &&
-    !/^[6-9]\d{9}$/.test(values.ownerMobileNumber)
-  ) {
-    errors.ownerMobileNumber =
-      "Mobile number must be a valid 10-digit Indian mobile number";
-  }
 
   // PanCard Number validation
   if (
     values.ownerAadhaarNumber &&
-    !/^\d{12}$/.test(values.ownerAadhaarNumber)
+    !/^\d{10}$/.test(values.ownerAadhaarNumber)
   ) {
-    errors.ownerAadhaarNumber = "PanCard Number must be exactly 12 digits";
+    errors.ownerAadhaarNumber = "PanCard Number must be exactly 10 digits";
   }
 
   return errors;
@@ -203,7 +186,7 @@ const VehicleForm = ({
                 onChange={handleChange}
                 disabled={loading}
                 placeholder="123456789012"
-                maxLength="12"
+                maxLength="10"
                 className="text-sm"
               />
               {errors.ownerAadhaarNumber && (
