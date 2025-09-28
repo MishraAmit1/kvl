@@ -703,7 +703,16 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
   }
 
   // ✅ ENHANCED: Action buttons based on status
+  // ✅ ENHANCED: Action buttons based on status
   const actions = [];
+
+  // Debug console log add karo
+  console.log("DEBUG Actions:", {
+    status: consignment.status,
+    hasVehicleId: !!consignment.vehicle?.vehicleId,
+    hasPickupDate: !!consignment.pickupDate,
+    vehicleNumber: consignment.vehicle?.vehicleNumber,
+  });
 
   if (consignment.status === "BOOKED" && !consignment.vehicle?.vehicleId) {
     actions.push(
@@ -719,36 +728,52 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
     );
   }
 
-  if (
-    consignment.status === "ASSIGNED" &&
-    consignment.vehicle?.vehicleId &&
-    !consignment.pickupDate
-  ) {
-    actions.push(
-      <Button
-        key="schedule"
-        size="sm"
-        variant="outline"
-        onClick={() => setActionModal({ type: "schedule" })}
-      >
-        <Calendar className="h-4 w-4 mr-2" />
-        Schedule Pickup
-      </Button>
-    );
-  }
+  // ✅ FIXED: Better logic for ASSIGNED status
+  if (consignment.status === "ASSIGNED") {
+    // If no vehicle assigned yet, allow assigning
+    if (!consignment.vehicle?.vehicleId) {
+      actions.push(
+        <Button
+          key="assign"
+          size="sm"
+          variant="outline"
+          onClick={() => setActionModal({ type: "assign" })}
+        >
+          <Truck className="h-4 w-4 mr-2" />
+          Assign Vehicle/Driver
+        </Button>
+      );
+    }
 
-  if (consignment.status === "SCHEDULED" && consignment.pickupDate) {
-    actions.push(
-      <Button
-        key="intransit"
-        size="sm"
-        variant="outline"
-        onClick={() => setActionModal({ type: "intransit" })}
-      >
-        <Truck className="h-4 w-4 mr-2" />
-        Mark In Transit
-      </Button>
-    );
+    // If vehicle is assigned but no pickup scheduled
+    if (consignment.vehicle?.vehicleId && !consignment.pickupDate) {
+      actions.push(
+        <Button
+          key="schedule"
+          size="sm"
+          variant="outline"
+          onClick={() => setActionModal({ type: "schedule" })}
+        >
+          <Calendar className="h-4 w-4 mr-2" />
+          Schedule Pickup
+        </Button>
+      );
+    }
+
+    // If pickup is already scheduled, allow direct transit
+    if (consignment.pickupDate && consignment.vehicle?.vehicleId) {
+      actions.push(
+        <Button
+          key="intransit"
+          size="sm"
+          variant="outline"
+          onClick={() => setActionModal({ type: "intransit" })}
+        >
+          <Truck className="h-4 w-4 mr-2" />
+          Mark In Transit
+        </Button>
+      );
+    }
   }
 
   if (consignment.status === "IN_TRANSIT") {

@@ -195,11 +195,6 @@ const Consignments = () => {
   };
 
   const handleDelete = async (consignment) => {
-    // if (consignment.status === "DELIVERED") {
-    //   toast.error("Cannot delete delivered consignment");
-    //   return;
-    // }
-
     if (
       window.confirm(`Delete consignment ${consignment.consignmentNumber}?`)
     ) {
