@@ -1020,10 +1020,13 @@ const assignVehicleToConsignment = asyncHandler(async (req, res) => {
     throw throwApiError(404, "Consignment not found");
   }
 
-  if (consignment.status !== "BOOKED") {
+  const allowedStatuses = ["BOOKED", "ASSIGNED"];
+  if (!allowedStatuses.includes(consignment.status)) {
     throw throwApiError(
       400,
-      "Vehicle can only be assigned to booked consignments"
+      `Vehicle can only be assigned to consignments with status: ${allowedStatuses.join(
+        ", "
+      )}`
     );
   }
 
