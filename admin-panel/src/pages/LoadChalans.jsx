@@ -199,7 +199,7 @@ const LoadChalans = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">Load Chalans</h1>
           <p className="text-muted-foreground">
-            Manage truck load chalans and consignments
+            Manage truck LORRY HIRE & CHALLAN and consignments
           </p>
         </div>
         <Link to="/load-chalans/new">
@@ -443,7 +443,9 @@ const LoadChalans = () => {
         {loadChalans.length === 0 && (
           <div className="text-center py-12">
             <Package className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-2 text-sm font-medium">No load chalans found</h3>
+            <h3 className="mt-2 text-sm font-medium">
+              No LORRY HIRE & CHALLAN found
+            </h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Get started by creating a new load chalan.
             </p>

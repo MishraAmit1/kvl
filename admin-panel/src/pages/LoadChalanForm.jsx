@@ -264,7 +264,7 @@ const LoadChalanForm = () => {
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Load Chalans
+          Back to LORRY HIRE & CHALLAN
         </button>
         <div className="h-6 w-px bg-gray-300" />
         <h1 className="text-2xl font-bold text-gray-900">

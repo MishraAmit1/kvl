@@ -5,16 +5,18 @@ A comprehensive logistics and transportation management system built with modern
 ## 🚀 Features
 
 ### Core Functionality
+
 - **Consignment Management**: Track and manage shipments with unique IDs (KVL-796+)
 - **Vehicle Fleet Management**: Manage vehicle information and assignments
 - **Driver Management**: Track driver details and assignments
 - **Customer Management**: Maintain customer database and relationships
 - **Freight Bill Generation**: Create and manage freight bills with PDF export
-- **Load Chalan System**: Generate load chalans for shipments
+- **Load Chalan System**: Generate LORRY HIRE & CHALLAN for shipments
 - **Payment Tracking**: Track payment receipts with date management
 - **Status Management**: Multiple status options (Assigned, Booked, Transit, Delivered)
 
 ### Advanced Features
+
 - **PDF Generation**: Automated PDF reports for bills and chalans
 - **Email Integration**: SendGrid integration for notifications
 - **Authentication System**: Secure user authentication with JWT
@@ -26,6 +28,7 @@ A comprehensive logistics and transportation management system built with modern
 ## 🛠️ Tech Stack
 
 ### Backend
+
 - **Runtime**: Node.js with Express.js
 - **Database**: MongoDB with Mongoose
 - **Authentication**: JWT with bcryptjs
@@ -36,6 +39,7 @@ A comprehensive logistics and transportation management system built with modern
 - **Development**: Nodemon, dotenv
 
 ### Frontend (Admin Panel)
+
 - **Framework**: React 19 with Vite
 - **UI Library**: shadcn/ui with Radix UI
 - **Styling**: Tailwind CSS with animations
@@ -75,6 +79,7 @@ kvl/
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - MongoDB database
 - Supabase account (for file storage)
@@ -83,17 +88,20 @@ kvl/
 ### Backend Setup
 
 1. **Navigate to backend directory**
+
    ```bash
    cd backend
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Environment Configuration**
    Create a `.env` file:
+
    ```env
    MONGODB_URI=your_mongodb_connection_string
    PORT=3000
@@ -105,10 +113,11 @@ kvl/
    ```
 
 4. **Start the server**
+
    ```bash
    # Development
    npm run dev
-   
+
    # Production
    npm start
    ```
@@ -116,22 +125,26 @@ kvl/
 ### Frontend Setup
 
 1. **Navigate to admin panel directory**
+
    ```bash
    cd admin-panel
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Environment Configuration**
    Create a `.env` file:
+
    ```env
    VITE_API_BASE_URL=http://localhost:3000/api/v1
    ```
 
 4. **Start the development server**
+
    ```bash
    npm run dev
    ```
@@ -142,10 +155,12 @@ kvl/
 ## 📊 API Endpoints
 
 ### Authentication
+
 - `POST /api/v1/users/login` - User login
 - `POST /api/v1/users/register` - User registration
 
 ### Core Resources
+
 - `GET|POST /api/v1/customers` - Customer management
 - `GET|POST /api/v1/vehicles` - Vehicle management
 - `GET|POST /api/v1/drivers` - Driver management
@@ -156,6 +171,7 @@ kvl/
 ## 🔧 Key Features in Detail
 
 ### Consignment Management
+
 - Unique ID generation starting from KVL-796
 - Editable consignment IDs by admin
 - Multiple status tracking (Assigned, Booked, Transit, Delivered)
@@ -163,12 +179,14 @@ kvl/
 - Vehicle assignment with proper fleet integration
 
 ### PDF Generation
+
 - Automated freight bill generation
 - Load chalan PDF creation
 - Custom formatting and branding
 - Email delivery integration
 
 ### Payment Tracking
+
 - Payment receipt functionality
 - Date management (current or custom)
 - Database persistence for filtering
@@ -177,12 +195,14 @@ kvl/
 ## 🚀 Deployment
 
 ### Backend Deployment
+
 ```bash
 # Build and start
 npm start
 ```
 
 ### Frontend Deployment
+
 ```bash
 # Build for production
 npm run build
@@ -192,6 +212,7 @@ npm run preview
 ```
 
 ### Vercel Deployment
+
 The project includes `vercel.json` configuration for easy Vercel deployment.
 
 ## 🔒 Security Features
@@ -214,12 +235,14 @@ The project includes `vercel.json` configuration for easy Vercel deployment.
 ## 📝 Development Notes
 
 ### Current Development Tasks
+
 - Consignment ID editing functionality
 - Payment receipt system implementation
 - Vehicle assignment dropdown fixes
 - Status management enhancements
 
 ### Known Issues
+
 - Vehicle dropdown showing only one option (needs fix)
 - Consignment ID format customization pending
 
@@ -230,6 +253,7 @@ This project is licensed under the ISC License.
 ## 👨‍💻 Author
 
 **AMS (Amit Mishra)**
+
 - GitHub: [@MishraAmit1](https://github.com/MishraAmit1)
 
 ## 📞 Support

@@ -20,7 +20,7 @@ const navigation = [
   { name: "Drivers", href: "/drivers", icon: User2 }, // or Truck/SteeringWheel icon
   { name: "Vehicles", href: "/vehicles", icon: Truck },
   { name: "Consignments", href: "/consignments", icon: Package },
-  { name: "Load Chalans", href: "/load-chalans", icon: ClipboardList },
+  { name: "LORRY HIRE & CHALLAN", href: "/load-chalans", icon: ClipboardList },
   { name: "Freight Bills", href: "/freight-bills", icon: FileText },
   { name: "Settings", href: "/settings", icon: Settings },
   // { name: "Users", href: "/users", icon: UserCog }, // Optional
