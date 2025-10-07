@@ -501,7 +501,7 @@ const LoadChalanForm = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cleaner Name
+                Broker Name
               </label>
               <input
                 type="text"

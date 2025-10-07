@@ -423,7 +423,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     putKV2("Pan No.:", panNoVal, col1X, yL, col1LabelW, midX - col1X - 10);
     yL += rowH;
     putKV2(
-      "Cleaner Name:",
+      "Broker Name:",
       cleanerVal,
       col1X,
       yL,
