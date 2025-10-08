@@ -437,8 +437,40 @@ export const generateLoadChalanPDF = async (loadChalan) => {
 
     // Right column
     let yR = ownerY;
-    putKV2("Owner Address:", ownerAddressVal, col2X, yR, col2LabelW, 390);
-    yR += rowH;
+    // === Owner Address: auto‑shrink font if too long ===
+    {
+      const ownerAddressVal = loadChalan.ownerAddress || "N/A";
+      const label = "Owner Address:";
+      const labelW = col2LabelW;
+      const maxWidth = 390 - labelW - 6; // available text box width
+
+      // label print
+      doc.font("Helvetica-Bold").fontSize(labelFS).fillColor("#374151");
+      doc.text(label, col2X, yR, { width: labelW });
+
+      // start from normal font, then shrink if it overflows
+      let fontSize = 10;
+      doc.font("Helvetica-Bold").fontSize(fontSize);
+      let textWidth = doc.widthOfString(ownerAddressVal);
+
+      while (textWidth > maxWidth && fontSize > 7) {
+        fontSize -= 0.5;
+        doc.fontSize(fontSize);
+        textWidth = doc.widthOfString(ownerAddressVal);
+      }
+
+      // final draw
+      doc
+        .font("Helvetica-Bold")
+        .fillColor("#111827")
+        .text(ownerAddressVal, col2X + labelW + 6, yR, {
+          width: maxWidth,
+          align: "left",
+          lineBreak: false,
+        });
+
+      yR += rowH;
+    }
     putKV2("Driver Licence:", licenceVal, col2X, yR, col2LabelW, 390);
     yR += rowH;
     putKV2("Driver Ph.No.:", driverPhVal, col2X, yR, col2LabelW, 390);
@@ -778,7 +810,6 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     prow("Less TDS.", lessTDS, { color: "#D11A1A" });
     psep();
     prow("Balance Freight :", balanceFrt, { bold: true });
-
     // === Footer below both panels ===
     const footerStartY = chargesBottom + 15;
     doc
@@ -796,7 +827,17 @@ export const generateLoadChalanPDF = async (loadChalan) => {
 
     // Additional info box
     const additionalInfoY = footerStartY + 25;
-    doc.rect(15, additionalInfoY, 400, 60).stroke();
+
+    // Check if remarks exists
+    // Show remarks box only if real text present in remarks field
+    const remarkText =
+      typeof loadChalan.remarks === "string" ? loadChalan.remarks.trim() : "";
+    const hasRemarks = remarkText.length > 0;
+    // Calculate box width based on remarks
+    const leftBoxWidth = hasRemarks ? 390 : 400; // Agar remarks nahi hai to original width
+
+    // Left box - Additional Information
+    doc.rect(15, additionalInfoY, leftBoxWidth, 60).stroke();
     doc
       .font("Helvetica-Bold")
       .fontSize(9)
@@ -833,6 +874,31 @@ export const generateLoadChalanPDF = async (loadChalan) => {
         additionalInfoY + 40
       );
 
+    // Right box - Remarks (ONLY IF EXISTS)
+    if (hasRemarks) {
+      const rightBoxX = 15 + 390 + 20; // Fixed positioning
+      const rightBoxWidth = 390;
+
+      doc.rect(rightBoxX, additionalInfoY, rightBoxWidth, 60).stroke();
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(9)
+        .fillColor("#111827")
+        .text("Remarks:", rightBoxX + 5, additionalInfoY + 5);
+
+      doc
+        .font("Helvetica")
+        .fontSize(8)
+        .fillColor("#374151")
+        .text(remarkText, rightBoxX + 5, additionalInfoY + 20, {
+          width: rightBoxWidth - 10,
+          height: 35,
+          align: "left",
+          lineBreak: true,
+          ellipsis: true,
+        });
+    }
+
     // Signatures
     const signatureY = 540;
     doc.rect(50, signatureY - 20, 200, 40).stroke();
@@ -852,7 +918,6 @@ export const generateLoadChalanPDF = async (loadChalan) => {
         width: 200,
         align: "center",
       });
-
     doc.end();
 
     // Return buffer
