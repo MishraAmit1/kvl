@@ -291,7 +291,10 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     doc
       .fontSize(12)
       .font("Helvetica-Bold")
-      .text("LOAD CHALLAN", 15, titleY, { align: "center", width: 810 });
+      .text("LORRY HIRE & CHALLAN", 15, titleY, {
+        align: "center",
+        width: 810,
+      });
 
     // === Trip Info: 2 lines, no background ===
     const infoX = 20;
