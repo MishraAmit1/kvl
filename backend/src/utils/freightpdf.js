@@ -9,7 +9,7 @@ export const generateFreightBillPDF = async (freightBill) => {
 
     // Comprehensive null checks
     if (!freightBill) {
-      throw new Error("Freight bill data is requiblack");
+      throw new Error("Freight bill data is required");
     }
 
     if (!freightBill.party) {
@@ -17,7 +17,7 @@ export const generateFreightBillPDF = async (freightBill) => {
     }
 
     if (!freightBill.party.name) {
-      throw new Error("Party name is requiblack");
+      throw new Error("Party name is required");
     }
 
     if (!freightBill.consignments || !Array.isArray(freightBill.consignments)) {
@@ -201,7 +201,7 @@ export const generateFreightBillPDF = async (freightBill) => {
         let result = "";
 
         if (n >= 100) {
-          result += ones[Math.floor(n / 100)] + " Hundblack ";
+          result += ones[Math.floor(n / 100)] + " Hundred ";
           n %= 100;
         }
 
@@ -434,7 +434,7 @@ export const generateFreightBillPDF = async (freightBill) => {
           const destination =
             consignment.destination || consignment.toCity || "N/A";
           const chargedWeight = consignment.chargedWeight || 0;
-          const rate = consignment.rate || "0";
+          const rate = consignment.rate || "";
           const freight = consignment.freight || 0;
           const stCharges = consignment.stCharges || 0;
           const hamali = consignment.hamali || 0;
@@ -467,13 +467,15 @@ export const generateFreightBillPDF = async (freightBill) => {
           });
 
           // Rate
-          doc.text(rate, colX[4] + 2, currentY + 8, {
+          const rateDisplay =
+            rate && Number(rate) > 0 ? formatDecimal(rate) : "";
+          doc.text(rateDisplay, colX[4] + 2, currentY + 8, {
             width: colX[5] - colX[4] - 4,
             align: "center",
           });
 
           // Freight
-          doc.text(formatNumber(freight), colX[5] + 2, currentY + 8, {
+          doc.text(formatDecimal(freight), colX[5] + 2, currentY + 8, {
             width: colX[6] - colX[5] - 4,
             align: "center",
           });
@@ -485,25 +487,25 @@ export const generateFreightBillPDF = async (freightBill) => {
           });
 
           // Hamali
-          doc.text(formatNumber(hamali), colX[7] + 2, currentY + 8, {
+          doc.text(formatDecimal(hamali), colX[7] + 2, currentY + 8, {
             width: colX[8] - colX[7] - 4,
             align: "center",
           });
 
           // Other charges
-          doc.text(formatNumber(otherCharges), colX[8] + 2, currentY + 8, {
+          doc.text(formatDecimal(otherCharges), colX[8] + 2, currentY + 8, {
             width: colX[9] - colX[8] - 4,
             align: "center",
           });
 
           // Door Delivery
-          doc.text(formatNumber(doorDelivery), colX[9] + 2, currentY + 8, {
+          doc.text(formatDecimal(doorDelivery), colX[9] + 2, currentY + 8, {
             width: colX[10] - colX[9] - 4,
             align: "center",
           });
 
           // Grand Total
-          doc.text(formatNumber(grandTotal), colX[10] + 2, currentY + 8, {
+          doc.text(formatDecimal(grandTotal), colX[10] + 2, currentY + 8, {
             width: colX[11] - colX[10] - 4,
             align: "center",
           });
@@ -571,7 +573,7 @@ export const generateFreightBillPDF = async (freightBill) => {
 
     // Final amount
     doc.text(
-      formatNumber(freightBill.finalAmount),
+      formatDecimal(freightBill.finalAmount),
       colX[10] + 2,
       tenthRowY + 6,
       {

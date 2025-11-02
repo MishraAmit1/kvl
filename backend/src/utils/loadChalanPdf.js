@@ -14,7 +14,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     );
 
     // --- Validations ---
-    if (!loadChalan) throw new Error("Load chalan data is requiblack");
+    if (!loadChalan) throw new Error("Load chalan data is required");
     if (!Array.isArray(loadChalan.consignments))
       throw new Error("Load chalan must have consignments array");
     if (loadChalan.consignments.length === 0)
@@ -159,7 +159,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
       const convert = (n) => {
         let s = "";
         if (n >= 100) {
-          s += ones[Math.floor(n / 100)] + " Hundblack ";
+          s += ones[Math.floor(n / 100)] + " Hundred ";
           n %= 100;
         }
         if (n >= 20) {
@@ -604,9 +604,9 @@ export const generateLoadChalanPDF = async (loadChalan) => {
       // REAL Value (goods value)
       const value =
         c.value ??
-        c.declablackValue ??
+        c.declaredValue ??
         c.consignmentId?.value ??
-        c.consignmentId?.declablackValue ??
+        c.consignmentId?.declaredValue ??
         0;
 
       const destination =
@@ -651,7 +651,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
       // Value (bigger font for emphasis)
       doc
         .fontSize(10)
-        .text(formatNumber(value), columns[5].x + 4, currentY + 5, {
+        .text(formatDecimal(value), columns[5].x + 4, currentY + 5, {
           width: columns[5].width - 8,
           align: "right",
         });
@@ -699,7 +699,7 @@ export const generateLoadChalanPDF = async (loadChalan) => {
     // Value total a little bigger too
     doc
       .fontSize(10)
-      .text(formatNumber(totalValue), columns[5].x + 4, summaryY + 5, {
+      .text(formatDecimal(totalValue), columns[5].x + 4, summaryY + 5, {
         width: columns[5].width - 8,
         align: "right",
       });

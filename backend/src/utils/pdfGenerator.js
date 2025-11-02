@@ -109,6 +109,12 @@ export const generateConsignmentPDF = async (consignment, res) => {
       .padStart(2, "0")}/${d.getFullYear()}`;
   };
 
+  // ✅ YEH NAYA FUNCTION ADD KARO (formatDate ke baad, drawCheckbox ke pehle)
+  const formatDecimal = (num, decimals = 2) =>
+    num === null || num === undefined || isNaN(num)
+      ? (0).toFixed(decimals)
+      : Number(num).toFixed(decimals);
+
   const drawCheckbox = (x, y, checked) => {
     doc.rect(x, y, 10, 10).stroke();
     if (checked) {
@@ -628,15 +634,33 @@ export const generateConsignmentPDF = async (consignment, res) => {
     );
 
     // Replace the calculation with direct field access
-    const rateDisplay = consignment?.rate ? String(consignment.rate) : "-";
+    // ✅ UPDATED RATE LOGIC
+    const rateValue = consignment?.rate;
+    let rateDisplay = ""; // Default blank (not "-")
+
+    if (
+      rateValue !== null &&
+      rateValue !== undefined &&
+      rateValue !== "" &&
+      rateValue !== 0
+    ) {
+      const numValue = Number(rateValue);
+      if (!isNaN(numValue) && numValue > 0) {
+        // Valid number → show with .00
+        rateDisplay = formatDecimal(numValue);
+      } else if (typeof rateValue === "string" && rateValue.trim() !== "") {
+        // Non-empty string like "RATE" → show as is
+        rateDisplay = rateValue;
+      }
+    }
 
     doc.text(rateDisplay, colX[5] + 2, contentY, {
       width: colWidths[5] - 4,
       align: "center",
     });
 
-    const freightRs = Math.floor(consignment?.freight || 0);
-    doc.text(freightRs.toLocaleString("en-IN"), colX[6] + 2, contentY, {
+    const freightValue = consignment?.freight || 0;
+    doc.text(formatDecimal(freightValue), colX[6] + 2, contentY, {
       width: colWidths[6] - 4,
       align: "center",
     });
@@ -711,9 +735,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
       `Invoice No.: ${consignment?.invoiceNumber || ""}`,
       `Date: ${formatDate(consignment?.bookingDate) || ""}`,
       `Value: ${
-        consignment?.value != null
-          ? consignment.value.toLocaleString("en-IN")
-          : ""
+        consignment?.value != null ? formatDecimal(consignment.value) : ""
       }`,
     ];
     doc.text(invLines.join("\n"), mergedLeftX, invBlockTopY, {
@@ -762,8 +784,7 @@ export const generateConsignmentPDF = async (consignment, res) => {
         width: colWidths[5] - 4,
         align: "center",
       });
-      const chargeRs = Math.floor(charge.value);
-      doc.text(chargeRs.toLocaleString("en-IN"), colX[6] + 2, chargeY + 2, {
+      doc.text(formatDecimal(charge.value), colX[6] + 2, chargeY + 2, {
         width: colWidths[6] - 4,
         align: "center",
       });
@@ -777,16 +798,10 @@ export const generateConsignmentPDF = async (consignment, res) => {
       width: colWidths[5] - 4,
       align: "center",
     });
-    const serviceTaxRs = Math.floor(serviceTax);
-    doc.text(
-      serviceTaxRs.toLocaleString("en-IN"),
-      colX[6] + 2,
-      serviceTaxY + 2,
-      {
-        width: colWidths[6] - 4,
-        align: "center",
-      }
-    );
+    doc.text(formatDecimal(serviceTax), colX[6] + 2, serviceTaxY + 2, {
+      width: colWidths[6] - 4,
+      align: "center",
+    });
 
     doc
       .font("Helvetica-Bold")
@@ -794,16 +809,10 @@ export const generateConsignmentPDF = async (consignment, res) => {
         width: colWidths[5] - 4,
         align: "center",
       });
-    const grandTotalRs = Math.floor(grandTotal);
-    doc.text(
-      grandTotalRs.toLocaleString("en-IN"),
-      colX[6] + 2,
-      grandTotalY + 2,
-      {
-        width: colWidths[6] - 4,
-        align: "center",
-      }
-    );
+    doc.text(formatDecimal(grandTotal), colX[6] + 2, grandTotalY + 2, {
+      width: colWidths[6] - 4,
+      align: "center",
+    });
 
     // BOTTOM STRIP
     const stripY = tableY - 8 + tableH + 8;
