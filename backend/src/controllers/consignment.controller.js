@@ -95,20 +95,6 @@ const createConsignment = asyncHandler(async (req, res) => {
     );
   }
 
-  // Validate positive numbers
-  if (
-    packages <= 0 ||
-    actualWeight <= 0 ||
-    chargedWeight <= 0 ||
-    value <= 0 ||
-    freight < 0
-  ) {
-    throw throwApiError(
-      400,
-      "Packages, weights, value must be positive. Freight cannot be negative"
-    );
-  }
-
   // Generate consignment number
   if (!req.body.consignmentNumber) {
     throw throwApiError(400, "Consignment number is required");

@@ -77,18 +77,9 @@ const freightBillSchema = new mongoose.Schema(
         },
         rate: {
           type: String,
-          required: true,
         },
         freight: {
           type: Number,
-          required: true,
-          min: [0, "Freight cannot be negative"],
-          validate: {
-            validator: function (v) {
-              return v >= 0;
-            },
-            message: "Freight amount must be non-negative",
-          },
         },
         hamali: {
           type: Number,
