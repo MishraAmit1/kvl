@@ -96,20 +96,6 @@ function validateStep(step, values, customers, mode) {
           "Charged weight cannot be less than actual weight";
       }
     }
-
-    if (!values.value || parseFloat(values.value) <= 0) {
-      errors.value = "Value must be greater than 0";
-    }
-
-    if (!values.freight || parseFloat(values.freight) < 0) {
-      errors.freight = "Freight cannot be negative";
-    }
-
-    // FIX: Use values.rate instead of rate, and don't use throwApiError
-    if (!values.rate || !values.rate.trim()) {
-      errors.rate = "Rate is required";
-    }
-
     // Validate optional charges are not negative
     const chargeFields = [
       "hamali",
