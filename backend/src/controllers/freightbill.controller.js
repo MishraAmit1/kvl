@@ -13,15 +13,15 @@ const createFreightBill = asyncHandler(async (req, res) => {
   const { customerId, billingBranch, consignmentIds, adjustments } = req.body;
 
   // Input validation
-  if (
-    !customerId ||
-    !billingBranch ||
-    !consignmentIds ||
-    consignmentIds.length === 0
-  ) {
-    const error = throwApiError(400, "Please provide all required fields");
-    throw error;
-  }
+  // if (
+  //   !customerId ||
+  //   !billingBranch ||
+  //   !consignmentIds ||
+  //   consignmentIds.length === 0
+  // ) {
+  //   const error = throwApiError(400, "Please provide all required fields");
+  //   throw error;
+  // }
 
   // Validate ObjectId format
   if (!mongoose.Types.ObjectId.isValid(customerId)) {

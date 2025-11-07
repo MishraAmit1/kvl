@@ -41,42 +41,42 @@ const createConsignment = asyncHandler(async (req, res) => {
   } = req.body;
 
   // Validate required fields
-  if (
-    !bookingBranch ||
-    !fromCity ||
-    !toCity ||
-    !description ||
-    !packages ||
-    !actualWeight ||
-    !chargedWeight ||
-    !value ||
-    !freight
-  ) {
-    throw throwApiError(400, "Please provide all required fields");
-  }
+  // if (
+  //   !bookingBranch ||
+  //   !fromCity ||
+  //   !toCity ||
+  //   !description ||
+  //   !packages ||
+  //   !actualWeight ||
+  //   !chargedWeight ||
+  //   !value ||
+  //   !freight
+  // ) {
+  //   throw throwApiError(400, "Please provide all required fields");
+  // }
 
   // Validate consignor
-  if (!consignor.name || !consignor.address || !consignor.mobile) {
-    throw throwApiError(400, "Please provide complete consignor details");
-  }
+  // if (!consignor.name || !consignor.address || !consignor.mobile) {
+  //   throw throwApiError(400, "Please provide complete consignor details");
+  // }
 
   // Validate consignee
-  if (!consignee.name || !consignee.address || !consignee.mobile) {
-    throw throwApiError(400, "Please provide complete consignee details");
-  }
+  // if (!consignee.name || !consignee.address || !consignee.mobile) {
+  //   throw throwApiError(400, "Please provide complete consignee details");
+  // }
 
   // ✅ ENHANCED VALIDATION
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+  // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
-  // Validate emails if provided
-  if (consignor.email && !emailRegex.test(consignor.email)) {
-    throw throwApiError(400, "Invalid consignor email format");
-  }
+  // // Validate emails if provided
+  // if (consignor.email && !emailRegex.test(consignor.email)) {
+  //   throw throwApiError(400, "Invalid consignor email format");
+  // }
 
-  if (consignee.email && !emailRegex.test(consignee.email)) {
-    throw throwApiError(400, "Invalid consignee email format");
-  }
+  // if (consignee.email && !emailRegex.test(consignee.email)) {
+  //   throw throwApiError(400, "Invalid consignee email format");
+  // }
 
   // Validate GST if provided
   // if (consignor.gstNumber && !gstRegex.test(consignor.gstNumber)) {
@@ -96,9 +96,9 @@ const createConsignment = asyncHandler(async (req, res) => {
   }
 
   // Generate consignment number
-  if (!req.body.consignmentNumber) {
-    throw throwApiError(400, "Consignment number is required");
-  }
+  // if (!req.body.consignmentNumber) {
+  //   throw throwApiError(400, "Consignment number is required");
+  // }
   const consignmentNumber = req.body.consignmentNumber;
 
   // Calculate grand total
