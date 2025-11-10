@@ -577,9 +577,7 @@ const ConsignmentForm = ({
               </label>
               <Input
                 name="freight"
-                type="number"
-                step="0.01"
-                min="0"
+                type="text" // Changed from "number" to "text"
                 value={values.freight}
                 onChange={handleChange}
                 disabled={loading}

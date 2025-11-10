@@ -467,15 +467,38 @@ export const generateFreightBillPDF = async (freightBill) => {
           });
 
           // Rate
-          const rateDisplay =
-            rate && Number(rate) > 0 ? formatDecimal(rate) : "";
+          // Rate - Handle both number and string values properly
+          let rateDisplay = "";
+          if (rate !== null && rate !== undefined && rate !== "") {
+            const numValue = Number(rate);
+            if (!isNaN(numValue) && numValue > 0) {
+              // Valid number → show with decimals
+              rateDisplay = formatDecimal(numValue);
+            } else if (typeof rate === "string" && rate.trim() !== "") {
+              // String like "FIXED" → show as is
+              rateDisplay = rate;
+            }
+          }
+
           doc.text(rateDisplay, colX[4] + 2, currentY + 8, {
             width: colX[5] - colX[4] - 4,
             align: "center",
           });
 
           // Freight
-          doc.text(formatDecimal(freight), colX[5] + 2, currentY + 8, {
+          let freightDisplay = "";
+          if (freight !== null && freight !== undefined && freight !== "") {
+            const numValue = Number(freight);
+            if (!isNaN(numValue) && numValue !== 0) {
+              // Valid number → show with .00
+              freightDisplay = formatDecimal(numValue);
+            } else if (typeof freight === "string" && freight.trim() !== "") {
+              // String like "FIXED" → show as is
+              freightDisplay = freight;
+            }
+          }
+
+          doc.text(freightDisplay, colX[5] + 2, currentY + 8, {
             width: colX[6] - colX[5] - 4,
             align: "center",
           });

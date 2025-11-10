@@ -111,33 +111,32 @@ const consignmentSchema = new mongoose.Schema(
     },
     // Charges
     freight: {
-      type: Number,
+      type: String,
       required: true,
-      default: 0,
     },
     hamali: {
-      type: Number,
-      default: 0,
+      type: String,
+      default: "0",
     },
     stCharges: {
-      type: Number,
-      default: 0,
+      type: String,
+      default: "0",
     },
     doorDelivery: {
-      type: Number,
-      default: 0,
+      type: String,
+      default: "0",
     },
     otherCharges: {
-      type: Number,
-      default: 0,
+      type: String,
+      default: "0",
     },
     riskCharges: {
-      type: Number,
-      default: 0,
+      type: String,
+      default: "0",
     },
     serviceTax: {
-      type: Number,
-      default: 0,
+      type: String,
+      default: "0",
     },
     grandTotal: {
       type: Number,
