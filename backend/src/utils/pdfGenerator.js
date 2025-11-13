@@ -752,20 +752,30 @@ export const generateConsignmentPDF = async (consignment, res) => {
     );
 
     // Calculate all charges
-    const hamali = consignment?.hamali || 0;
-    const stCharges = consignment?.stCharges || 0;
-    const doorDelivery = consignment?.doorDelivery || 0;
-    const otherCharges = consignment?.otherCharges || 0;
-    const riskCharges = consignment?.riskCharges || 0;
-    const freight = consignment?.freight || 0;
+    // Calculate all charges - CONVERT TO NUMBERS FIRST!
+    const hamali = Number(consignment?.hamali) || 0;
+    const stCharges = Number(consignment?.stCharges) || 0;
+    const doorDelivery = Number(consignment?.doorDelivery) || 0;
+    const otherCharges = Number(consignment?.otherCharges) || 0;
+    const riskCharges = Number(consignment?.riskCharges) || 0;
+
+    // Handle freight specially (could be "FIXED" or number)
+    let freight = 0;
+    if (consignment?.freight) {
+      const freightNum = Number(consignment.freight);
+      if (!isNaN(freightNum)) {
+        freight = freightNum;
+      }
+    }
 
     const chargesSubtotal =
       hamali + stCharges + doorDelivery + otherCharges + riskCharges;
 
     const totalWithFreight = freight + chargesSubtotal;
 
-    const serviceTax = consignment?.serviceTax || 0;
-    const grandTotal = consignment?.grandTotal || totalWithFreight + serviceTax;
+    const serviceTax = Number(consignment?.serviceTax) || 0;
+    const grandTotal =
+      Number(consignment?.grandTotal) || totalWithFreight + serviceTax;
 
     // Display charges
     const charges = [
