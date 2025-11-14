@@ -931,6 +931,13 @@ const ConsignmentDetails = ({ consignmentId, onClose, onRefresh }) => {
                   {consignment.packages}
                 </div>
                 <div>
+                  <span className="font-medium">Packing Method:</span>{" "}
+                  {consignment.methodOfPacking === "CUSTOM"
+                    ? consignment.customPackingMethod
+                    : consignment.methodOfPacking}
+                </div>
+
+                <div>
                   <span className="font-medium">Weight:</span>{" "}
                   {consignment.actualWeight} / {consignment.chargedWeight} kg
                 </div>

@@ -612,7 +612,12 @@ export const generateConsignmentPDF = async (consignment, res) => {
       width: colWidths[0] - 4,
       align: "center",
     });
-    doc.text(consignment?.methodOfPacking || "Cartoon", colX[1] + 2, contentY, {
+    const packingMethod =
+      consignment?.methodOfPacking === "CUSTOM"
+        ? consignment?.customPackingMethod || "CUSTOM"
+        : consignment?.methodOfPacking || "CARTOON";
+
+    doc.text(packingMethod, colX[1] + 2, contentY, {
       width: colWidths[1] - 4,
       align: "center",
     });

@@ -13,6 +13,8 @@ const defaultValues = {
   toCity: "",
   description: "",
   packages: "",
+  methodOfPacking: "CARTOON", // ✅ ADD THIS
+  customPackingMethod: "", // ✅ ADD THIS
   rate: "",
   actualWeight: "",
   chargedWeight: "",
@@ -75,7 +77,17 @@ function validateStep(step, values, customers, mode) {
     if (!values.toCity?.trim()) errors.toCity = "To city is required";
     if (!values.description?.trim())
       errors.description = "Description is required";
+    // ✅ ADD PACKING VALIDATION
+    if (!values.methodOfPacking) {
+      errors.methodOfPacking = "Method of packing is required";
+    }
 
+    if (
+      values.methodOfPacking === "CUSTOM" &&
+      !values.customPackingMethod?.trim()
+    ) {
+      errors.customPackingMethod = "Custom packing method is required";
+    }
     // Validate numeric fields
     if (!values.packages || parseInt(values.packages) <= 0) {
       errors.packages = "Packages must be greater than 0";
@@ -474,6 +486,72 @@ const ConsignmentForm = ({
               </div>
             )}
           </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Method of Packing *
+            </label>
+            <select
+              name="methodOfPacking"
+              value={values.methodOfPacking}
+              onChange={(e) => {
+                handleChange(e);
+                // Clear custom field if not CUSTOM
+                if (e.target.value !== "CUSTOM") {
+                  setValues((prev) => ({ ...prev, customPackingMethod: "" }));
+                }
+              }}
+              disabled={loading}
+              className={`w-full rounded-md border bg-background text-foreground px-3 py-2 text-sm ${
+                errors.methodOfPacking ? "border-red-500" : "border-border"
+              }`}
+            >
+              <option value="CARTOON">Cartoon</option>
+              <option value="DRUM">Drum</option>
+              <option value="BAGS">Bags</option>
+              <option value="ROLL">Roll</option>
+              <option value="REEL">Reel</option>
+              <option value="PKGS">Pkgs</option>
+              <option value="LOOSE">Loose</option>
+              <option value="CUSTOM">Custom (Other)</option>
+            </select>
+            {errors.methodOfPacking && (
+              <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.methodOfPacking}
+              </div>
+            )}
+          </div>
+
+          {/* Show custom input if CUSTOM is selected */}
+          {values.methodOfPacking === "CUSTOM" && (
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Custom Packing Method *
+              </label>
+              <Input
+                name="customPackingMethod"
+                value={values.customPackingMethod}
+                onChange={(e) => {
+                  const upperValue = e.target.value.toUpperCase();
+                  setValues((prev) => ({
+                    ...prev,
+                    customPackingMethod: upperValue,
+                  }));
+                }}
+                disabled={loading}
+                placeholder="Enter custom packing method (e.g., PALLETS, CRATES)"
+                className={`text-sm ${
+                  errors.customPackingMethod ? "border-red-500" : ""
+                }`}
+              />
+              {errors.customPackingMethod && (
+                <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.customPackingMethod}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div>
@@ -1048,6 +1126,7 @@ const ConsignmentForm = ({
             </div>
 
             {/* Shipment Details */}
+            {/* Inside Shipment Details Card in Step 4 */}
             <div className="border rounded-lg p-3">
               <h4 className="font-medium mb-2">Shipment Details</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
@@ -1059,6 +1138,13 @@ const ConsignmentForm = ({
                 </div>
                 <div>
                   <strong>Packages:</strong> {values.packages}
+                </div>
+                {/* ✅ ADD THIS */}
+                <div>
+                  <strong>Packing:</strong>{" "}
+                  {values.methodOfPacking === "CUSTOM"
+                    ? values.customPackingMethod
+                    : values.methodOfPacking}
                 </div>
                 <div>
                   <strong>Weight:</strong> {values.actualWeight} kg /{" "}

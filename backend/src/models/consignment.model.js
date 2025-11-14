@@ -93,6 +93,30 @@ const consignmentSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    methodOfPacking: {
+      type: String,
+      enum: {
+        values: [
+          "CARTOON",
+          "DRUM",
+          "BAGS",
+          "ROLL",
+          "REEL",
+          "PKGS",
+          "LOOSE",
+          "CUSTOM",
+        ],
+        message: "Invalid method of packing",
+      },
+      default: "CARTOON",
+      trim: true,
+      uppercase: true,
+    },
+    customPackingMethod: {
+      type: String,
+      trim: true,
+      uppercase: true,
+    },
     actualWeight: {
       type: Number,
       required: true,

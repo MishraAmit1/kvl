@@ -18,6 +18,8 @@ const createConsignment = asyncHandler(async (req, res) => {
     toCity,
     description,
     packages,
+    methodOfPacking, // ✅ ADD THIS
+    customPackingMethod,
     actualWeight,
     chargedWeight,
     value,
@@ -123,6 +125,9 @@ const createConsignment = asyncHandler(async (req, res) => {
     toCity,
     description,
     packages,
+    methodOfPacking: methodOfPacking || "CARTOON", // ✅ ADD THIS
+    customPackingMethod:
+      methodOfPacking === "CUSTOM" ? customPackingMethod : null, // ✅ ADD THIS
     actualWeight,
     chargedWeight,
     value,
