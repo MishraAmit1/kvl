@@ -104,6 +104,10 @@ const consignmentSchema = new mongoose.Schema(
           "REEL",
           "PKGS",
           "LOOSE",
+          "F/DRUM", // ✅ NEW
+          "G/BUNDLE", // ✅ NEW
+          "CARBEY", // ✅ NEW
+          "BOCKEK",
           "CUSTOM",
         ],
         message: "Invalid method of packing",
