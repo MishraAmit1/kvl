@@ -105,13 +105,13 @@ const createConsignment = asyncHandler(async (req, res) => {
 
   // Calculate grand total
   const grandTotal =
-    (freight || 0) +
-    (hamali || 0) +
-    (stCharges || 0) +
-    (doorDelivery || 0) +
-    (otherCharges || 0) +
-    (riskCharges || 0) +
-    (serviceTax || 0);
+    (Number(freight) || 0) +
+    (Number(hamali) || 0) +
+    (Number(stCharges) || 0) +
+    (Number(doorDelivery) || 0) +
+    (Number(otherCharges) || 0) +
+    (Number(riskCharges) || 0) +
+    (Number(serviceTax) || 0);
 
   // Create consignment
   const consignmentData = {
@@ -487,13 +487,17 @@ const updateConsignment = asyncHandler(async (req, res) => {
     updateData.serviceTax !== undefined
   ) {
     updateData.grandTotal =
-      (updateData.freight || consignment.freight || 0) +
-      (updateData.hamali || consignment.hamali || 0) +
-      (updateData.stCharges || consignment.stCharges || 0) +
-      (updateData.doorDelivery || consignment.doorDelivery || 0) +
-      (updateData.otherCharges || consignment.otherCharges || 0) +
-      (updateData.riskCharges || consignment.riskCharges || 0) +
-      (updateData.serviceTax || consignment.serviceTax || 0);
+      (Number(updateData.freight) || Number(consignment.freight) || 0) +
+      (Number(updateData.hamali) || Number(consignment.hamali) || 0) +
+      (Number(updateData.stCharges) || Number(consignment.stCharges) || 0) +
+      (Number(updateData.doorDelivery) ||
+        Number(consignment.doorDelivery) ||
+        0) +
+      (Number(updateData.otherCharges) ||
+        Number(consignment.otherCharges) ||
+        0) +
+      (Number(updateData.riskCharges) || Number(consignment.riskCharges) || 0) +
+      (Number(updateData.serviceTax) || Number(consignment.serviceTax) || 0);
   }
   updateData.updatedBy = req.user?._id || null;
 

@@ -486,39 +486,56 @@ const ConsignmentForm = ({
               </div>
             )}
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Method of Packing *
+          <div className="space-y-1.5">
+            <label className="block text-sm font-semibold text-foreground">
+              Method of Packing <span className="text-red-500">*</span>
             </label>
             <select
               name="methodOfPacking"
               value={values.methodOfPacking}
               onChange={(e) => {
                 handleChange(e);
-                // Clear custom field if not CUSTOM
                 if (e.target.value !== "CUSTOM") {
                   setValues((prev) => ({ ...prev, customPackingMethod: "" }));
                 }
               }}
               disabled={loading}
-              className={`w-full rounded-md border bg-background text-foreground px-3 py-2 text-sm ${
-                errors.methodOfPacking ? "border-red-500" : "border-border"
-              }`}
+              className={`w-full rounded-lg border-2 bg-background px-4 py-2.5 text-sm
+      focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
+      transition-colors duration-200
+      ${
+        errors.methodOfPacking
+          ? "border-red-500 focus:border-red-500"
+          : "border-border hover:border-primary/50"
+      }`}
             >
-              <option value="CARTOON">Cartoon</option>
-              <option value="DRUM">Drum</option>
-              <option value="BAGS">Bags</option>
-              <option value="ROLL">Roll</option>
-              <option value="REEL">Reel</option>
-              <option value="PKGS">Pkgs</option>
-              <option value="LOOSE">Loose</option>
-              <option value="CUSTOM">Custom (Other)</option>
+              <option value="">-- Select Packing Type --</option>
+              <optgroup label="Standard">
+                <option value="CARTOON">Cartoon (Box)</option>
+                <option value="BAGS">Bags</option>
+                <option value="PKGS">Packages</option>
+                <option value="LOOSE">Loose</option>
+              </optgroup>
+              <optgroup label="Industrial">
+                <option value="DRUM">Drum</option>
+                <option value="F/DRUM">F/Drum (Fiber)</option>
+                <option value="CARBEY">Carbey</option>
+                <option value="BOCKEK">Bockek</option>
+              </optgroup>
+              <optgroup label="Material">
+                <option value="ROLL">Roll</option>
+                <option value="REEL">Reel</option>
+                <option value="G/BUNDLE">G/Bundle</option>
+              </optgroup>
+              <optgroup label="Other">
+                <option value="CUSTOM">Custom</option>
+              </optgroup>
             </select>
             {errors.methodOfPacking && (
-              <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+              <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 {errors.methodOfPacking}
-              </div>
+              </p>
             )}
           </div>
 

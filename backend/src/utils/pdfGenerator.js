@@ -758,11 +758,13 @@ export const generateConsignmentPDF = async (consignment, res) => {
 
     // Calculate all charges
     // Calculate all charges - CONVERT TO NUMBERS FIRST!
+    // Calculate all charges - CONVERT TO NUMBERS FIRST!
     const hamali = Number(consignment?.hamali) || 0;
     const stCharges = Number(consignment?.stCharges) || 0;
     const doorDelivery = Number(consignment?.doorDelivery) || 0;
     const otherCharges = Number(consignment?.otherCharges) || 0;
     const riskCharges = Number(consignment?.riskCharges) || 0;
+    const serviceTax = Number(consignment?.serviceTax) || 0;
 
     // Handle freight specially (could be "FIXED" or number)
     let freight = 0;
@@ -773,15 +775,27 @@ export const generateConsignmentPDF = async (consignment, res) => {
       }
     }
 
+    // ✅ PROPER CALCULATION - Always recalculate, don't trust DB grandTotal
     const chargesSubtotal =
       hamali + stCharges + doorDelivery + otherCharges + riskCharges;
 
     const totalWithFreight = freight + chargesSubtotal;
 
-    const serviceTax = Number(consignment?.serviceTax) || 0;
-    const grandTotal =
-      Number(consignment?.grandTotal) || totalWithFreight + serviceTax;
+    // ✅ RECALCULATE GRAND TOTAL (don't use DB value directly)
+    const grandTotal = totalWithFreight + serviceTax;
 
+    console.log("PDF Calculation Debug:", {
+      freight,
+      hamali,
+      stCharges,
+      doorDelivery,
+      otherCharges,
+      riskCharges,
+      serviceTax,
+      totalWithFreight,
+      grandTotal,
+      dbGrandTotal: consignment?.grandTotal, // For comparison
+    });
     // Display charges
     const charges = [
       { label: "Hamali", value: hamali },
