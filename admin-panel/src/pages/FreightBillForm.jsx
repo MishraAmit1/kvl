@@ -184,7 +184,19 @@ const FreightBillForm = ({
     console.log("Submitting bill data:", billData);
     onSubmit(billData);
   };
-
+  useEffect(() => {
+    if (unbilledConsignments.length > 0) {
+      console.log("=== UNBILLED CONSIGNMENTS DEBUG ===");
+      unbilledConsignments.forEach((c) => {
+        console.log(`${c.consignmentNumber}:`, {
+          grandTotal: c.grandTotal,
+          type: typeof c.grandTotal,
+          asNumber: Number(c.grandTotal),
+        });
+      });
+      console.log("=== END DEBUG ===");
+    }
+  }, [unbilledConsignments]);
   return (
     // ✅ REMOVED: max-h-[80vh] overflow-y-auto to prevent dual scrollbars
     <div className="space-y-4">
@@ -304,7 +316,7 @@ const FreightBillForm = ({
                   <span className="ml-auto text-sm text-muted-foreground">
                     Total: ₹
                     {unbilledConsignments
-                      .reduce((sum, c) => sum + c.grandTotal, 0)
+                      .reduce((sum, c) => sum + (Number(c.grandTotal) || 0), 0) // ✅ Convert to number
                       .toLocaleString()}
                   </span>
                 </div>
@@ -350,7 +362,10 @@ const FreightBillForm = ({
                             </div>
                             <div className="text-right">
                               <div className="font-medium">
-                                ₹{consignment.grandTotal.toLocaleString()}
+                                ₹
+                                {Number(
+                                  consignment.grandTotal || 0
+                                ).toLocaleString()}{" "}
                               </div>
                               <div className="text-xs text-muted-foreground">
                                 {consignment.chargedWeight} kg
@@ -473,7 +488,8 @@ const FreightBillForm = ({
                 <span>
                   Selected Consignments ({selectedConsignments.length}):
                 </span>
-                <span>₹{totalAmount.toLocaleString()}</span>
+                <span>₹{Number(totalAmount || 0).toLocaleString()}</span>{" "}
+                {/* ✅ Added Number() */}
               </div>
 
               {adjustments

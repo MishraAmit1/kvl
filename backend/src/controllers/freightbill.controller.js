@@ -102,31 +102,61 @@ const createFreightBill = asyncHandler(async (req, res) => {
     const billNumber = await generateFreightBillNumber();
 
     // Prepare consignment details for bill with proper validation
+    // Prepare consignment details for bill with NUMBER CONVERSION
+    // freightbill.controller.js - Line 97-117
     const billConsignments = consignments.map((consignment) => {
-      const chargedWeight = consignment.chargedWeight || 0;
-      const freight = consignment.freight || 0;
+      // ✅ Convert ALL to numbers
+      const freight = Number(consignment.freight) || 0;
+      const hamali = Number(consignment.hamali) || 0;
+      const stCharges = Number(consignment.stCharges) || 0;
+      const doorDelivery = Number(consignment.doorDelivery) || 0;
+      const otherCharges = Number(consignment.otherCharges) || 0;
+      const riskCharges = Number(consignment.riskCharges) || 0;
+      const serviceTax = Number(consignment.serviceTax) || 0;
+
+      // ✅ RECALCULATE properly
+      const correctGrandTotal =
+        freight +
+        hamali +
+        stCharges +
+        doorDelivery +
+        otherCharges +
+        riskCharges +
+        serviceTax;
 
       return {
         consignmentId: consignment._id,
         consignmentNumber: consignment.consignmentNumber,
         consignmentDate: consignment.bookingDate,
         destination: consignment.toCity,
-        chargedWeight: chargedWeight,
-        rate: consignment.rate || 0, // ✅ Take rate directly from consignment
-        freight: consignment.freight || 0,
-        hamali: consignment.hamali || 0,
-        stCharges: consignment.stCharges || 0,
-        doorDelivery: consignment.doorDelivery || 0,
-        otherCharges: consignment.otherCharges || 0,
-        grandTotal: consignment.grandTotal || 0,
+        chargedWeight: Number(consignment.chargedWeight) || 0,
+        rate: consignment.rate || "",
+        freight: freight,
+        hamali: hamali,
+        stCharges: stCharges,
+        doorDelivery: doorDelivery,
+        otherCharges: otherCharges,
+        grandTotal: correctGrandTotal, // ✅ Now correct!
       };
     });
 
     // Calculate total amount
     const totalAmount = billConsignments.reduce(
-      (sum, item) => sum + (item.grandTotal || 0),
+      (sum, item) => sum + item.grandTotal, // Now both are numbers
       0
     );
+
+    console.log("=== TOTAL AMOUNT CALCULATION ===");
+    console.log("Total Amount:", totalAmount, typeof totalAmount);
+    console.log(
+      "Individual Grand Totals:",
+      billConsignments.map((c) => ({
+        number: c.consignmentNumber,
+        grandTotal: c.grandTotal,
+        type: typeof c.grandTotal,
+      }))
+    );
+    console.log("=== END CALCULATION ===");
 
     // Validate and process adjustments
     let validatedAdjustments = [];
@@ -144,10 +174,11 @@ const createFreightBill = asyncHandler(async (req, res) => {
     let finalAmount = totalAmount;
     if (validatedAdjustments.length > 0) {
       validatedAdjustments.forEach((adjustment) => {
+        const adjAmount = Number(adjustment.amount) || 0; // ✅ Convert to number
         if (adjustment.type === "DISCOUNT") {
-          finalAmount -= Math.abs(adjustment.amount || 0);
+          finalAmount -= Math.abs(adjAmount);
         } else {
-          finalAmount += Math.abs(adjustment.amount || 0);
+          finalAmount += Math.abs(adjAmount);
         }
       });
     }
